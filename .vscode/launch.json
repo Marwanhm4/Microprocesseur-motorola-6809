@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Moto6809App",
+            "request": "launch",
+            "mainClass": "com.motorola6809.simulator.Moto6809App",
+            "projectName": "MOTOROLA_6809",
+            "vmArgs": "--module-path C:/javafx-sdk-21/lib --add-modules javafx.controls"
+        }
+    ]
+}
+
+
+
+
+

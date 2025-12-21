@@ -3,16 +3,15 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Moto6809App",
+            "name": "▶ Lancer Simulateur6809",
             "request": "launch",
-            "mainClass": "com.motorola6809.simulator.Moto6809App",
+            "mainClass": "com.motorola6809.view.Simulateur6809",
             "projectName": "MOTOROLA_6809",
-            "vmArgs": "--module-path C:/javafx-sdk-21/lib --add-modules javafx.controls"
+            "preLaunchTask": "compile",
+            "classPaths": [
+                "${workspaceFolder}/build"
+            ],
+            "args": []
         }
     ]
 }
-
-
-
-
-

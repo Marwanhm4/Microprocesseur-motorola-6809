@@ -2,28 +2,31 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "compile-javafx",
+            "label": "compile",
             "type": "shell",
             "command": "javac",
             "args": [
-                "--module-path",
-                "C:/javafx-sdk-21/lib",
-                "--add-modules",
-                "javafx.controls",
                 "-d",
                 "build",
                 "-sourcepath",
                 "src",
-                "src/com/motorola6809/simulator/*.java"
+                "src/com/motorola6809/simulator/*.java",
+                "src/com/motorola6809/view/*.java"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$tsc"]
+            "problemMatcher": ["$tsc"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }
+
+
+
 
 
 

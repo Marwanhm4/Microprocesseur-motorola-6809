@@ -7,11 +7,13 @@
             "request": "launch",
             "mainClass": "com.motorola6809.view.Simulateur6809",
             "projectName": "MOTOROLA_6809",
-            "preLaunchTask": "compile",
             "classPaths": [
                 "${workspaceFolder}/build"
             ],
-            "args": []
+            "modulePaths": [],
+            "vmArgs": "",
+            "args": "",
+            "console": "internalConsole"
         }
     ]
 }

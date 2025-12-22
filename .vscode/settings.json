@@ -5,6 +5,13 @@
     "java.project.sourcePaths": [
         "src"
     ],
-    "java.project.outputPath": "build"
+    "java.project.outputPath": "build",
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.project.referencedLibraries": [],
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    }
 }
-

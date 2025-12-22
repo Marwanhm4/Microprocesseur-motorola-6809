@@ -18,6 +18,10 @@
                 "isDefault": true
             },
             "problemMatcher": ["$tsc"],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated"
+            },
             "options": {
                 "cwd": "${workspaceFolder}"
             }

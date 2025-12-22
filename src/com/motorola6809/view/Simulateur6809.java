@@ -207,8 +207,8 @@ public class Simulateur6809 {
             flagCheckBoxes[i] = new JCheckBox(flags[i]);
             flagCheckBoxes[i].setBackground(Color.BLACK);
             flagCheckBoxes[i].setForeground(Color.WHITE);
-            flagCheckBoxes[i].setFont(new Font("Arial", Font.BOLD, 20));
-            flagCheckBoxes[i].setPreferredSize(new Dimension(60, 50));
+            flagCheckBoxes[i].setFont(new Font("Arial", Font.BOLD, 14));
+            flagCheckBoxes[i].setPreferredSize(new Dimension(50, 40));
             flagCheckBoxes[i].setFocusPainted(false);
             flagsPanel.add(flagCheckBoxes[i]);
         }
@@ -224,7 +224,7 @@ public class Simulateur6809 {
         instructionArea = new JTextArea("LDA #$00");
         instructionArea.setBackground(Color.BLACK);
         instructionArea.setForeground(Color.ORANGE);
-        instructionArea.setFont(new Font("Verdana", Font.BOLD, 14));
+        instructionArea.setFont(new Font("Verdana", Font.BOLD, 20));
         instructionArea.setEditable(false);
         instructionPanel.add(instructionArea, BorderLayout.CENTER);
 
@@ -239,16 +239,26 @@ public class Simulateur6809 {
         JTextField field = new JTextField(initialValue);
         field.setBackground(Color.WHITE);
         field.setForeground(Color.BLACK);
-        field.setFont(new Font("Arial", Font.PLAIN, 14));
-        field.setPreferredSize(new Dimension(150, 30));
+        field.setFont(new Font("Arial", Font.BOLD, 20));
+        field.setPreferredSize(new Dimension(22, 22));
         field.setEditable(false);
+        return field;
+    }
+    
+    private static JTextField createRegisterLabelField(String labelText) {
+        JTextField field = new JTextField(labelText);
+        field.setBackground(Color.WHITE);
+        field.setForeground(Color.BLACK);
+        field.setFont(new Font("Arial", Font.BOLD, 20));
+        field.setPreferredSize(new Dimension(22, 22));
+        field.setEditable(false);
+        field.setHorizontalAlignment(JTextField.CENTER);
         return field;
     }
 
     private static void addRegisterRow(JPanel panel, String labelText, JTextField field) {
-        JLabel label = new JLabel(labelText);
-        label.setForeground(Color.WHITE);
-        panel.add(label);
+        JTextField labelField = createRegisterLabelField(labelText);
+        panel.add(labelField);
         panel.add(field);
     }
 
@@ -260,13 +270,15 @@ public class Simulateur6809 {
                 "ÉDITEUR", 0, 0, new Font("", Font.BOLD, 14), Color.WHITE));
 
         editeur = new JTextArea();
-        editeur.setBackground(Color.WHITE);
-        editeur.setForeground(Color.BLACK);
+        editeur.setBackground(Color.BLACK);
+        editeur.setForeground(Color.WHITE);
         editeur.setFont(new Font("Monospaced", Font.PLAIN, 14));
         editeur.setEditable(true);
-        editeur.setText(""); // Éditeur vide - l'utilisateur doit écrire son programme
+        editeur.setText("");
+        editeur.setCaretColor(Color.WHITE);
         
         JScrollPane editorScroll = new JScrollPane(editeur);
+        editorScroll.getViewport().setBackground(Color.BLACK);
         editorSpace.add(editorScroll, BorderLayout.CENTER);
 
         return editorSpace;
@@ -315,29 +327,34 @@ public class Simulateur6809 {
 
     private static JPanel createMemoryTable(String title, int startAddr, int endAddr, boolean isRAM) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        panel.setBackground(Color.BLACK);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
+        topPanel.setBackground(Color.BLACK);
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-        titleLabel.setForeground(Color.BLACK);
+        titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
         topPanel.add(titleLabel, BorderLayout.NORTH);
 
         JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        navPanel.setBackground(Color.WHITE);
+        navPanel.setBackground(Color.BLACK);
 
         JLabel goToLabel = new JLabel("Aller à:");
+        goToLabel.setForeground(Color.WHITE);
         goToLabel.setFont(new Font("Arial", Font.PLAIN, 11));
         navPanel.add(goToLabel);
 
         JTextField goAddrField = new JTextField(10);
+        goAddrField.setBackground(Color.DARK_GRAY);
+        goAddrField.setForeground(Color.WHITE);
         goAddrField.setToolTipText("Aller à l'adresse (hex), ex: 2000");
         goAddrField.setFont(new Font("Monospaced", Font.PLAIN, 12));
         navPanel.add(goAddrField);
 
         JButton goButton = new JButton("→");
+        goButton.setBackground(Color.DARK_GRAY);
+        goButton.setForeground(Color.WHITE);
         goButton.setFont(new Font("Arial", Font.BOLD, 12));
         navPanel.add(goButton);
 
@@ -360,13 +377,16 @@ public class Simulateur6809 {
         };
 
         JTable table = new JTable(model);
-        table.setBackground(Color.WHITE);
-        table.setForeground(Color.BLACK);
+        table.setBackground(Color.BLACK);
+        table.setForeground(Color.WHITE);
         table.setGridColor(Color.GRAY);
-        table.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        table.setFont(new Font("Monospaced", Font.PLAIN, 18));
         table.getTableHeader().setBackground(Color.DARK_GRAY);
         table.getTableHeader().setForeground(Color.WHITE);
-        table.setRowHeight(20);
+        table.getTableHeader().setFont(new Font("Monospaced", Font.BOLD, 18));
+        table.setRowHeight(28);
+        table.setSelectionBackground(Color.DARK_GRAY);
+        table.setSelectionForeground(Color.WHITE);
 
         // Ajouter un listener pour les modifications de mémoire
         model.addTableModelListener(e -> {
@@ -386,6 +406,7 @@ public class Simulateur6809 {
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setBackground(Color.BLACK);
+        scrollPane.setBackground(Color.BLACK);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         

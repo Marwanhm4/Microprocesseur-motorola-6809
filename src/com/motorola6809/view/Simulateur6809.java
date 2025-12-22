@@ -8,22 +8,20 @@ import com.motorola6809.simulator.Memory;
 import com.motorola6809.simulator.InstructionAssembler;
 
 public class Simulateur6809 {
-
-    // Variables statiques pour les menus
     static JMenu menu, submenu, menuSimulation, menuEdition, menuAffichage, menuOutils, menuFenetres;
     static JMenuBar mb;
     static JMenuItem i1, i2, i3, i11;
 
-    // Tables pour RAM et ROM
+    
     static JTable ramTable;
     static JTable romTable;
     static JFrame mainFrame;
 
-    // Backend du simulateur
+    
     static Memory memory;
     static CPU cpu;
     
-    // Composants UI pour mise à jour
+   
     static JTextField pcField, sField, uField, xField, yField;
     static JTextField aField, bField, dpField, spField;
     static JCheckBox[] flagCheckBoxes;
@@ -32,22 +30,22 @@ public class Simulateur6809 {
     static JTextArea historiqueArea;
     static JTextArea editeur;
     
-    // Timer pour exécution continue
+    
     static Timer runTimer;
     static volatile boolean isRunning = false;
 
     public static void main(String[] args) {
-        // Initialiser le backend
+        
         memory = new Memory();
         cpu = new CPU(memory);
         cpu.initialize();
         
-        // Configurer les zones mémoire
-        memory.setRAM(0x0000, 0x03FF);  // RAM: 0x0000-0x03FF
-        memory.setROM(0xFC00, 0xFFFD);  // ROM: 0xFC00-0xFFFD (on garde 0xFFFE-0xFFFF en RAM pour le vecteur de reset)
-        memory.setRAM(0xFFFE, 0xFFFF);  // RAM: 0xFFFE-0xFFFF pour le vecteur de reset
+       
+        memory.setRAM(0x0000, 0x03FF);  
+        memory.setROM(0xFC00, 0xFFFD);  
+        memory.setRAM(0xFFFE, 0xFFFF); 
 
-        // Créer la fenêtre principale
+       
         mainFrame = new JFrame("Simulateur 6809");
         mainFrame.setSize(1200, 800);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,7 +53,7 @@ public class Simulateur6809 {
 
         createMenuBar(mainFrame);
 
-        // Panel supérieur (titre + toolbar)
+        
         JPanel hautpanel = new JPanel(new BorderLayout());
         JPanel titre = new JPanel();
         titre.setBackground(Color.LIGHT_GRAY);
@@ -65,7 +63,7 @@ public class Simulateur6809 {
         label.setForeground(Color.black);
         titre.add(label);
 
-        // Toolbar avec boutons
+        
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         
@@ -75,7 +73,7 @@ public class Simulateur6809 {
         JButton run = new JButton("▶ Exécuter");
         JButton Pause = new JButton("⏸ Pause");
 
-        // Actions des boutons
+        
         reset.addActionListener(e -> resetCPU());
         Enregistrer.addActionListener(e -> saveProgram());
         pasApas.addActionListener(e -> stepCPU());
@@ -92,17 +90,17 @@ public class Simulateur6809 {
         hautpanel.add(toolBar, BorderLayout.SOUTH);
         mainFrame.add(hautpanel, BorderLayout.NORTH);
 
-        // Panel central (registres, éditeur, mémoire)
+        
         JPanel centrepanel = new JPanel(new GridLayout(1, 3, 10, 0));
         centrepanel.setBackground(Color.BLACK);
 
-        // Panel gauche - Registres et Flags
+        
         JPanel gauchePanel = createRegistersPanel();
 
-        // Panel central - Éditeur
+       
         JPanel editorSpace = createEditorPanel();
 
-        // Panel droit - Mémoire RAM/ROM
+        
         JPanel droitePanel = new JPanel(new GridLayout(2, 1, 0, 10));
         droitePanel.setBackground(Color.BLACK);
 
@@ -118,18 +116,18 @@ public class Simulateur6809 {
 
         mainFrame.add(centrepanel, BorderLayout.CENTER);
 
-        // Panel inférieur - Console et Historique
+        
         JPanel basPanel = createConsolePanel();
         mainFrame.add(basPanel, BorderLayout.SOUTH);
 
-        // Vider la ROM au démarrage (pas de programme de test)
+        
         clearROM();
         
-        // Configurer le vecteur de reset à 0xFC00
+        
         memory.writeByte(0xFFFE, (byte)0xFC);
         memory.writeByte(0xFFFF, (byte)0x00);
         
-        // Vider la console et l'historique
+        
         if (consoleArea != null) {
             consoleArea.setText("");
         }
@@ -137,30 +135,30 @@ public class Simulateur6809 {
             historiqueArea.setText("");
         }
         
-        // Réinitialiser le CPU (va lire PC depuis 0xFFFE = 0xFC00)
+        
         cpu.reset();
         
-        // S'assurer que PC est bien à 0xFC00
+        
         if (cpu.getPC() != 0xFC00) {
             cpu.setPC(0xFC00);
         }
         
-        // Initialiser l'affichage
+        
         updateAllViews();
         
         mainFrame.setVisible(true);
         
-        // Console vide au démarrage - pas de messages
+        
     }
 
-    // ==================== CRÉATION DES PANELS ====================
+    
 
     private static JPanel createRegistersPanel() {
         JPanel gauchePanel = new JPanel(new BorderLayout());
         gauchePanel.setBackground(Color.BLACK);
         gauchePanel.setPreferredSize(new Dimension(280, 600));
 
-        // Panel des registres
+        
         JPanel registresPanel = new JPanel();
         registresPanel.setPreferredSize(new Dimension(280, 250));
         registresPanel.setBackground(Color.BLACK);
@@ -170,7 +168,7 @@ public class Simulateur6809 {
                 BorderFactory.createLineBorder(Color.GRAY),
                 "REGISTRES", 0, 0, new Font("Verdana", Font.BOLD, 12), Color.WHITE));
 
-        // Création des champs de registres
+       
         pcField = createRegisterField("FC00");
         sField = createRegisterField("0000");
         uField = createRegisterField("0000");
@@ -181,7 +179,7 @@ public class Simulateur6809 {
         dpField = createRegisterField("00");
         spField = createRegisterField("0000");
 
-        // Ajouter les labels et champs
+        
         addRegisterRow(registresPanel, "PC:", pcField);
         addRegisterRow(registresPanel, "S:", sField);
         addRegisterRow(registresPanel, "U:", uField);
@@ -192,7 +190,7 @@ public class Simulateur6809 {
         addRegisterRow(registresPanel, "DP:", dpField);
         addRegisterRow(registresPanel, "SP:", spField);
 
-        // Panel des flags
+        
         JPanel flagsPanel = new JPanel();
         flagsPanel.setPreferredSize(new Dimension(280, 150));
         flagsPanel.setBackground(Color.BLACK);
@@ -213,7 +211,7 @@ public class Simulateur6809 {
             flagsPanel.add(flagCheckBoxes[i]);
         }
 
-        // Panel instruction courante
+        
         JPanel instructionPanel = new JPanel(new BorderLayout());
         instructionPanel.setPreferredSize(new Dimension(280, 80));
         instructionPanel.setBackground(Color.BLACK);
@@ -274,8 +272,12 @@ public class Simulateur6809 {
         editeur.setForeground(Color.WHITE);
         editeur.setFont(new Font("Monospaced", Font.PLAIN, 14));
         editeur.setEditable(true);
+<<<<<<< HEAD
         editeur.setText("");
         editeur.setCaretColor(Color.WHITE);
+=======
+        editeur.setText(""); 
+>>>>>>> 7b4c114c40a236826b4503cf724abc39c561d6bc
         
         JScrollPane editorScroll = new JScrollPane(editeur);
         editorScroll.getViewport().setBackground(Color.BLACK);
@@ -289,7 +291,7 @@ public class Simulateur6809 {
         basPanel.setPreferredSize(new Dimension(1200, 150));
         basPanel.setBackground(Color.BLACK);
 
-        // Console
+       
         JPanel consolePanel = new JPanel(new BorderLayout());
         consolePanel.setBackground(Color.BLACK);
         consolePanel.setBorder(BorderFactory.createTitledBorder(
@@ -304,7 +306,7 @@ public class Simulateur6809 {
         JScrollPane consoleScroll = new JScrollPane(consoleArea);
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
 
-        // Historique
+        
         JPanel historiquePanel = new JPanel(new BorderLayout());
         historiquePanel.setBackground(Color.BLACK);
         historiquePanel.setBorder(BorderFactory.createTitledBorder(
@@ -388,7 +390,7 @@ public class Simulateur6809 {
         table.setSelectionBackground(Color.DARK_GRAY);
         table.setSelectionForeground(Color.WHITE);
 
-        // Ajouter un listener pour les modifications de mémoire
+        
         model.addTableModelListener(e -> {
             if (e.getColumn() == 1) {
                 int row = e.getFirstRow();
@@ -416,12 +418,12 @@ public class Simulateur6809 {
         return panel;
     }
 
-    // ==================== ACTIONS DU CPU ====================
+    
 
     private static void resetCPU() {
-        pauseCPU(); // Arrêter l'exécution si elle est en cours
+        pauseCPU(); 
         
-        // Vider la console et l'historique
+        
         if (consoleArea != null) {
             consoleArea.setText("");
         }
@@ -429,22 +431,22 @@ public class Simulateur6809 {
             historiqueArea.setText("");
         }
         
-        // Vider la ROM pour bien configurer le programme suivant
+        
         clearROM();
         
-        // Configurer le vecteur de reset à 0xFC00
+        
         memory.writeByte(0xFFFE, (byte)0xFC);
         memory.writeByte(0xFFFF, (byte)0x00);
         
-        // Réinitialiser le CPU (va lire PC depuis 0xFFFE = 0xFC00)
+        
         cpu.reset();
         
-        // S'assurer que PC est bien à 0xFC00
+        
         if (cpu.getPC() != 0xFC00) {
             cpu.setPC(0xFC00);
         }
         
-        // Réinitialiser tous les registres à zéro
+       
         cpu.setA(0);
         cpu.setB(0);
         cpu.setX(0);
@@ -453,7 +455,7 @@ public class Simulateur6809 {
         cpu.setS(0);
         cpu.setDP(0);
         
-        // Mettre à jour l'affichage
+       
         updateAllViews();
     }
 
@@ -464,36 +466,36 @@ public class Simulateur6809 {
         try {
             int pcBefore = cpu.getPC();
             
-            // Vérifier que PC pointe vers la ROM
+            
             if (pcBefore < 0xFC00 || pcBefore > 0xFFFD) {
                 logError("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcBefore) + " est sorti de la ROM (0xFC00-0xFFFD)");
                 log("Le programme est terminé.");
                 return;
             }
             
-            // Lire l'opcode depuis la ROM
+            
             byte opcodeAtPC = memory.readByte(pcBefore);
             
-            // Détecter la fin du programme (opcode 0x00 = instruction END)
+            
             if (opcodeAtPC == 0x00) {
                 log("FIN DU PROGRAMME: Instruction END détectée à l'adresse 0x" + String.format("%04X", pcBefore));
                 log("Le programme est terminé.");
                 return;
             }
             
-            // Afficher l'instruction courante
+            
             String instruction = disassembleInstruction(pcBefore);
             log(String.format("\n=== EXÉCUTION ==="));
             log(String.format("PC = 0x%04X (ROM)", pcBefore));
             log(String.format("Opcode = 0x%02X", opcodeAtPC & 0xFF));
             log(String.format("Instruction = %s", instruction));
             
-            // Exécuter l'instruction (le PC s'incrémente automatiquement dans fetchByte/fetchWord)
+            
             cpu.step();
             
             int pcAfter = cpu.getPC();
             
-            // Vérifier si on est sorti de la ROM après exécution
+
             if (pcAfter < 0xFC00 || pcAfter > 0xFFFD) {
                 log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcAfter) + " est sorti de la ROM après exécution");
                 log("Le programme est terminé.");
@@ -501,13 +503,13 @@ public class Simulateur6809 {
                 return;
             }
             
-            // Mettre à jour l'affichage
+            
             updateAllViews();
             
-            // Afficher le résultat avec l'incrémentation du PC
+            
             int pcIncrement = pcAfter - pcBefore;
             if (pcIncrement < 0) {
-                pcIncrement += 0x10000; // Gérer le wrap-around
+                pcIncrement += 0x10000;
             }
             
             log(String.format("Après exécution:"));
@@ -538,7 +540,7 @@ public class Simulateur6809 {
             try {
                 int pcBefore = cpu.getPC();
                 
-                // Vérifier que PC pointe vers la ROM
+                
                 if (pcBefore < 0xFC00 || pcBefore > 0xFFFD) {
                     log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcBefore) + " est sorti de la ROM");
                     log("Le programme est terminé.");
@@ -546,10 +548,10 @@ public class Simulateur6809 {
                     return;
                 }
                 
-                // Lire l'opcode depuis la ROM
+                
                 byte opcodeAtPC = memory.readByte(pcBefore);
                 
-                // Détecter la fin du programme (opcode 0x00 = instruction END)
+                
                 if (opcodeAtPC == 0x00) {
                     log("FIN DU PROGRAMME: Instruction END détectée à l'adresse 0x" + String.format("%04X", pcBefore));
                     log("Le programme est terminé.");
@@ -557,12 +559,12 @@ public class Simulateur6809 {
                     return;
                 }
                 
-                // Exécuter l'instruction
+                
                 cpu.step();
                 
                 int pcAfter = cpu.getPC();
                 
-                // Vérifier si on est sorti de la ROM après exécution
+                
                 if (pcAfter < 0xFC00 || pcAfter > 0xFFFD) {
                     log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcAfter) + " est sorti de la ROM");
                     log("Le programme est terminé.");
@@ -595,14 +597,14 @@ public class Simulateur6809 {
 
     private static void saveProgram() {
         try {
-            // ÉTAPE 1: Lire le code depuis l'éditeur
+           
             String code = editeur.getText();
             if (code.trim().isEmpty()) {
                 logError("L'éditeur est vide. Veuillez écrire un programme.");
                 return;
             }
             
-            // Vider la console pour afficher le processus
+            
             consoleArea.setText("");
             
             log("=== CHARGEMENT DU PROGRAMME DEPUIS L'ÉDITEUR ===");
@@ -627,7 +629,7 @@ public class Simulateur6809 {
                 return;
             }
             
-            // Afficher le mapping instruction → opcode
+            
             log("Opcodes générés (" + bytecode.length + " bytes):");
             StringBuilder hexDump = new StringBuilder();
             for (int i = 0; i < bytecode.length; i++) {
@@ -641,17 +643,17 @@ public class Simulateur6809 {
                 log("  " + hexDump.toString());
             }
             
-            // ÉTAPE 3: Vider la ROM
+            
             log("\n=== VIDAGE DE LA ROM ===");
             clearROM();
             log("ROM vidée (0xFC00-0xFFFD)");
             
-            // ÉTAPE 4: Charger les opcodes en ROM
+            
             log("\n=== CHARGEMENT DES OPCODES EN ROM ===");
             log("Chargement de " + bytecode.length + " bytes à l'adresse 0xFC00...");
             memory.loadROM(0xFC00, bytecode);
             
-            // ÉTAPE 5: Vérifier que les opcodes sont bien en ROM
+            
             log("Vérification du chargement:");
             boolean allOk = true;
             for (int i = 0; i < bytecode.length; i++) {
@@ -674,19 +676,19 @@ public class Simulateur6809 {
             
             log("✓ Tous les opcodes sont correctement chargés en ROM");
             
-            // ÉTAPE 6: Configurer le vecteur de reset
+            
             log("\n=== CONFIGURATION DU VECTEUR DE RESET ===");
             memory.writeByte(0xFFFE, (byte)0xFC);
             memory.writeByte(0xFFFF, (byte)0x00);
             log("Vecteur de reset configuré: 0xFFFE-0xFFFF = 0xFC00");
             
-            // ÉTAPE 7: Initialiser le CPU et le PC
+            
             log("\n=== INITIALISATION DU CPU ===");
             cpu.reset();
             cpu.setPC(0xFC00);
             log("PC initialisé à 0xFC00 (première instruction en ROM)");
             
-            // Réinitialiser tous les registres à zéro
+            
             cpu.setA(0);
             cpu.setB(0);
             cpu.setX(0);
@@ -696,7 +698,7 @@ public class Simulateur6809 {
             cpu.setDP(0);
             log("Tous les registres réinitialisés à zéro");
             
-            // ÉTAPE 8: Vérifier que tout est prêt
+            
             byte firstOpcode = memory.readByte(0xFC00);
             int currentPC = cpu.getPC();
             
@@ -710,7 +712,7 @@ public class Simulateur6809 {
             log("→ Cliquez sur 'Exécuter' pour exécution continue");
             log("=== FIN CHARGEMENT ===");
             
-            // Mettre à jour l'affichage
+            
             updateAllViews();
             
             addHistory("PROGRAMME CHARGÉ - " + bytecode.length + " bytes à 0xFC00");
@@ -725,20 +727,18 @@ public class Simulateur6809 {
     
     private static void clearROM() {
         try {
-            // Vider la zone ROM (0xFC00-0xFFFD) en chargeant des zéros
-            // On garde 0xFFFE-0xFFFF en RAM pour le vecteur de reset
+           
             int romSize = 0xFFFD - 0xFC00 + 1;
             byte[] zeros = new byte[romSize];
-            // Le tableau est déjà initialisé à zéro par défaut en Java
             
-            // Charger les zéros dans la ROM (cela va écraser tout ce qui était là avant)
+            
             memory.loadROM(0xFC00, zeros);
         } catch (Exception e) {
             logError("Erreur lors du vidage de la ROM: " + e.getMessage());
         }
     }
 
-    // ==================== MISE À JOUR DE L'AFFICHAGE ====================
+    
 
     private static void updateAllViews() {
         updateRegistersDisplay();
@@ -779,7 +779,7 @@ public class Simulateur6809 {
     }
 
     private static void updateMemoryDisplay() {
-        // Mise à jour RAM
+       
         if (ramTable != null) {
             DefaultTableModel model = (DefaultTableModel) ramTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -790,7 +790,7 @@ public class Simulateur6809 {
             }
         }
 
-        // Mise à jour ROM
+        
         if (romTable != null) {
             DefaultTableModel model = (DefaultTableModel) romTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -815,20 +815,19 @@ public class Simulateur6809 {
         }
     }
 
-    // ==================== DISASSEMBLAGE ====================
+    
     
     private static String disassembleInstruction(int pc) {
         try {
             int opcode = memory.readByte(pc) & 0xFF;
             
-            // Détecter END (opcode 0x00)
+            
             if (opcode == 0x00) {
                 return "END";
             }
             
             String mnemonic = getMnemonic(opcode);
             
-            // Instructions immédiates 8-bit
             if (opcode == 0x86 || opcode == 0xC6 || opcode == 0x8B || opcode == 0xCB || 
                 opcode == 0x80 || opcode == 0xC0 || opcode == 0x84 || opcode == 0xC4 ||
                 opcode == 0x8A || opcode == 0xCA || opcode == 0x88 || opcode == 0xC8) {
@@ -836,27 +835,26 @@ public class Simulateur6809 {
                 return String.format("%s #$%02X", mnemonic, imm);
             }
             
-            // Instructions immédiates 16-bit
             if (opcode == 0x8E || opcode == 0xCE || opcode == 0x8F || opcode == 0xCF) {
                 int imm = (memory.readByte(pc + 1) & 0xFF) << 8 | (memory.readByte(pc + 2) & 0xFF);
                 return String.format("%s #$%04X", mnemonic, imm);
             }
             
-            // Instructions direct page
+            
             if (opcode == 0x96 || opcode == 0xD6 || opcode == 0x9E || opcode == 0xDE ||
                 opcode == 0x97 || opcode == 0xD7 || opcode == 0x9F || opcode == 0xDF) {
                 int addr = memory.readByte(pc + 1) & 0xFF;
                 return String.format("%s <$%02X", mnemonic, addr);
             }
             
-            // Instructions étendues
+           
             if (opcode == 0xB6 || opcode == 0xF6 || opcode == 0xBE || opcode == 0xFE ||
                 opcode == 0xB7 || opcode == 0xF7 || opcode == 0xBF || opcode == 0xFF) {
                 int addr = (memory.readByte(pc + 1) & 0xFF) << 8 | (memory.readByte(pc + 2) & 0xFF);
                 return String.format("%s $%04X", mnemonic, addr);
             }
             
-            // Instructions relatives
+            
             if (opcode == 0x20 || opcode == 0x26 || opcode == 0x27 || opcode == 0x21 ||
                 opcode == 0x22 || opcode == 0x23 || opcode == 0x24 || opcode == 0x25) {
                 byte offsetByte = memory.readByte(pc + 1);
@@ -865,7 +863,7 @@ public class Simulateur6809 {
                 return String.format("%s $%04X", mnemonic, target);
             }
             
-            // Instructions inhérentes
+            
             return mnemonic;
         } catch (Exception e) {
             return "???";
@@ -909,15 +907,10 @@ public class Simulateur6809 {
             case 0x3B: return "RTI";
             case 0x39: return "RTS";
             case 0x3F: return "SWI";
-            case 0x10: return "NOP"; // Extended opcode prefix
+            case 0x10: return "NOP"; 
             default: return String.format("OP%02X", opcode);
         }
     }
-    
-    // ==================== CHARGEMENT PROGRAMME ====================
-    // Note: loadTestProgram() supprimée - la ROM doit être vide au démarrage
-
-    // ==================== UTILITAIRES ====================
 
     private static void gotoMemoryAddress(String address, JTable table) {
         try {
@@ -967,8 +960,6 @@ public class Simulateur6809 {
         }
     }
 
-    // ==================== MENU BAR ====================
-
     private static void createMenuBar(JFrame frame) {
         mb = new JMenuBar();
 
@@ -978,7 +969,7 @@ public class Simulateur6809 {
         i11 = new JMenuItem("Quitter");
         
         i1.addActionListener(e -> {
-            // Ouvrir une nouvelle fenêtre éditeur
+
             JFrame editorFrame = new JFrame("Éditeur");
             editorFrame.setSize(600, 400);
             editorFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

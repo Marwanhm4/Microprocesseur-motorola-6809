@@ -1,76 +1,27 @@
 package com.motorola6809.simulator;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
+=======
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Map;
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
 
 public class InstructionAssembler {
     private static final Map<String, Integer> INSTRUCTION_MAP = new HashMap<>();
+
     static {
+        // Representative opcode map (extend as needed)
         INSTRUCTION_MAP.put("LDA#", 0x86);
         INSTRUCTION_MAP.put("LDB#", 0xC6);
         INSTRUCTION_MAP.put("LDX#", 0x8E);
-        INSTRUCTION_MAP.put("LDU#", 0xCE);
-        INSTRUCTION_MAP.put("LDS#", 0x10CE);
-        INSTRUCTION_MAP.put("LDY#", 0x108E);
-        INSTRUCTION_MAP.put("ADDA#", 0x8B);
-        INSTRUCTION_MAP.put("ADDB#", 0xCB);
-        INSTRUCTION_MAP.put("ADDX#", 0x8F);
-        INSTRUCTION_MAP.put("SUBA#", 0x80);
-        INSTRUCTION_MAP.put("SUBB#", 0xC0);
-        INSTRUCTION_MAP.put("ANDA#", 0x84);
-        INSTRUCTION_MAP.put("ANDB#", 0xC4);
-        INSTRUCTION_MAP.put("ORA#", 0x8A);
-        INSTRUCTION_MAP.put("ORB#", 0xCA);
-        INSTRUCTION_MAP.put("EORA#", 0x88);
-        INSTRUCTION_MAP.put("EORB#", 0xC8);
-        INSTRUCTION_MAP.put("CMPA#", 0x81);
-        INSTRUCTION_MAP.put("CMPB#", 0xC1);
-        INSTRUCTION_MAP.put("CMPX#", 0x8C);
-        INSTRUCTION_MAP.put("LDA<", 0x96);
-        INSTRUCTION_MAP.put("LDB<", 0xD6);
-        INSTRUCTION_MAP.put("LDX<", 0x9E);
-        INSTRUCTION_MAP.put("LDY<", 0xDE);
-        INSTRUCTION_MAP.put("LDU<", 0x9C);
-        INSTRUCTION_MAP.put("LDS<", 0x9D);
-        INSTRUCTION_MAP.put("STA<", 0x97);
-        INSTRUCTION_MAP.put("STB<", 0xD7);
-        INSTRUCTION_MAP.put("STX<", 0x9F);
-        INSTRUCTION_MAP.put("STY<", 0xDF);
-        INSTRUCTION_MAP.put("STU<", 0xDD);
-        INSTRUCTION_MAP.put("ADDA<", 0x9B);
-        INSTRUCTION_MAP.put("ADDB<", 0xDB);
-        INSTRUCTION_MAP.put("SUBA<", 0x90);
-        INSTRUCTION_MAP.put("SUBB<", 0xD0);
-        INSTRUCTION_MAP.put("ANDA<", 0x94);
-        INSTRUCTION_MAP.put("ANDB<", 0xD4);
-        INSTRUCTION_MAP.put("ORA<", 0x9A);
-        INSTRUCTION_MAP.put("ORB<", 0xDA);
-        INSTRUCTION_MAP.put("EORA<", 0x98);
-        INSTRUCTION_MAP.put("EORB<", 0xD8);
-        INSTRUCTION_MAP.put("CMPA<", 0x91);
-        INSTRUCTION_MAP.put("CMPB<", 0xD1);
-        INSTRUCTION_MAP.put("LDA$", 0xB6);
-        INSTRUCTION_MAP.put("LDB$", 0xF6);
-        INSTRUCTION_MAP.put("LDX$", 0xBE);
-        INSTRUCTION_MAP.put("LDY$", 0xFE);
-        INSTRUCTION_MAP.put("STA$", 0xB7);
-        INSTRUCTION_MAP.put("STB$", 0xF7);
-        INSTRUCTION_MAP.put("STX$", 0xBF);
-        INSTRUCTION_MAP.put("STY$", 0xFF);
-        INSTRUCTION_MAP.put("ADDA$", 0xBB);
-        INSTRUCTION_MAP.put("ADDB$", 0xFB);
-        INSTRUCTION_MAP.put("SUBA$", 0xB0);
-        INSTRUCTION_MAP.put("SUBB$", 0xF0);
-        INSTRUCTION_MAP.put("ANDA$", 0xB4);
-        INSTRUCTION_MAP.put("ANDB$", 0xF4);
-        INSTRUCTION_MAP.put("ORA$", 0xBA);
-        INSTRUCTION_MAP.put("ORB$", 0xFA);
-        INSTRUCTION_MAP.put("EORA$", 0xB8);
-        INSTRUCTION_MAP.put("EORB$", 0xF8);
-        INSTRUCTION_MAP.put("CMPA$", 0xB1);
-        INSTRUCTION_MAP.put("CMPB$", 0xF1);
+        INSTRUCTION_MAP.put("LDD$", 0xFC);
         INSTRUCTION_MAP.put("JMP$", 0x7E);
         INSTRUCTION_MAP.put("JSR$", 0xBD);
         INSTRUCTION_MAP.put("INCA", 0x4C);
@@ -79,6 +30,7 @@ public class InstructionAssembler {
         INSTRUCTION_MAP.put("DECB", 0x5A);
         INSTRUCTION_MAP.put("INX", 0x08);
         INSTRUCTION_MAP.put("DEX", 0x09);
+<<<<<<< HEAD
         INSTRUCTION_MAP.put("INY", 0x103C);
         INSTRUCTION_MAP.put("DEY", 0x103D);
         INSTRUCTION_MAP.put("COMA", 0x43);
@@ -108,40 +60,30 @@ public class InstructionAssembler {
         INSTRUCTION_MAP.put("PULB", 0x33);
         INSTRUCTION_MAP.put("PSHS", 0x34);
         INSTRUCTION_MAP.put("PULS", 0x35);
+=======
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
         INSTRUCTION_MAP.put("NOP", 0x12);
-        INSTRUCTION_MAP.put("SYNC", 0x13);
-        INSTRUCTION_MAP.put("SWI", 0x3F);
-        INSTRUCTION_MAP.put("RTI", 0x3B);
         INSTRUCTION_MAP.put("RTS", 0x39);
         INSTRUCTION_MAP.put("RESET", 0x3E);
         INSTRUCTION_MAP.put("BRA", 0x20);
-        INSTRUCTION_MAP.put("BRN", 0x21);
-        INSTRUCTION_MAP.put("BHI", 0x22);
-        INSTRUCTION_MAP.put("BLS", 0x23);
-        INSTRUCTION_MAP.put("BCC", 0x24);
-        INSTRUCTION_MAP.put("BCS", 0x25);
-        INSTRUCTION_MAP.put("BNE", 0x26);
-        INSTRUCTION_MAP.put("BEQ", 0x27);
-        INSTRUCTION_MAP.put("BVC", 0x28);
-        INSTRUCTION_MAP.put("BVS", 0x29);
-        INSTRUCTION_MAP.put("BPL", 0x2A);
-        INSTRUCTION_MAP.put("BMI", 0x2B);
-        INSTRUCTION_MAP.put("BGE", 0x2C);
-        INSTRUCTION_MAP.put("BLT", 0x2D);
-        INSTRUCTION_MAP.put("BGT", 0x2E);
-        INSTRUCTION_MAP.put("BLE", 0x2F);
         INSTRUCTION_MAP.put("BSR", 0x8D);
         INSTRUCTION_MAP.put("LBRA", 0x16);
         INSTRUCTION_MAP.put("LBSR", 0x17);
+<<<<<<< HEAD
         INSTRUCTION_MAP.put("JMP", 0x7E);
         INSTRUCTION_MAP.put("JSR", 0xBD);
         INSTRUCTION_MAP.put("TFR", 0x1F);
         INSTRUCTION_MAP.put("EXG", 0x1E);
         INSTRUCTION_MAP.put("DB", -1);
+=======
+        INSTRUCTION_MAP.put("TFR", 0x1F);
+        INSTRUCTION_MAP.put("EXG", 0x1E);
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
     }
 
     public static byte[] assemble(String[] lines) throws IllegalArgumentException {
         List<Byte> bytecode = new ArrayList<>();
+<<<<<<< HEAD
         for (String originalLine : lines) {
             String line = originalLine.trim();
             if (line.isEmpty()) {
@@ -168,10 +110,31 @@ public class InstructionAssembler {
             }
 
             if (instructionPart.equals("END")) {
+=======
+
+        for (String originalLine : lines) {
+            String line = originalLine == null ? "" : originalLine.trim();
+            if (line.isEmpty())
+                continue;
+
+            String instructionPart = line;
+            int sem = line.indexOf(';');
+            if (sem >= 0) {
+                instructionPart = line.substring(0, sem).trim();
+            }
+
+            if (instructionPart.isEmpty()) {
+                continue;
+            }
+
+            String upInst = instructionPart.toUpperCase();
+            if (upInst.equals("END")) {
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
                 bytecode.add((byte) 0x00);
                 break;
             }
 
+<<<<<<< HEAD
             if (instructionPart.equals("DB")) {
                 int address = -1;
                 int value = 0;
@@ -241,17 +204,22 @@ public class InstructionAssembler {
             AssemblyLine instruction = parseLine(instructionPart);
             if (instruction != null) {
                 for (byte b : instruction.getBytes()) {
+=======
+            AssemblyLine asm = parseLine(upInst);
+            if (asm != null) {
+                for (byte b : asm.getBytes())
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
                     bytecode.add(b);
-                }
             }
         }
+
         byte[] result = new byte[bytecode.size()];
-        for (int i = 0; i < bytecode.size(); i++) {
+        for (int i = 0; i < bytecode.size(); i++)
             result[i] = bytecode.get(i);
-        }
         return result;
     }
 
+<<<<<<< HEAD
     public static class DBInfo {
         public int address;
         public byte value;
@@ -280,32 +248,36 @@ public class InstructionAssembler {
     private static AssemblyLine parseLine(String line) throws IllegalArgumentException {
         line = line.toUpperCase().trim();
         if (line.isEmpty()) {
+=======
+    private static AssemblyLine parseLine(String line) {
+        if (line == null || line.isEmpty())
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
             return null;
-        }
         String[] parts = line.split("\\s+", 2);
         String mnemonic = parts[0];
         String operand = parts.length > 1 ? parts[1] : "";
+
         if (operand.startsWith("#")) {
-            String immediate = operand.substring(1).replace("$", "");
+            String imm = operand.substring(1).replace("$", "").trim();
             Integer opcode = INSTRUCTION_MAP.get(mnemonic + "#");
-            if (opcode != null) {
-                return new AssemblyLine(opcode, immediate);
-            }
+            if (opcode != null)
+                return new AssemblyLine(opcode, imm);
         }
+
         if (operand.startsWith("<")) {
-            String address = operand.substring(1).replace("$", "");
+            String addr = operand.substring(1).replace("$", "").trim();
             Integer opcode = INSTRUCTION_MAP.get(mnemonic + "<");
-            if (opcode != null) {
-                return new AssemblyLine(opcode, address);
-            }
+            if (opcode != null)
+                return new AssemblyLine(opcode, addr);
         }
-        if (operand.startsWith("$") && !operand.startsWith("#")) {
-            String address = operand.substring(1).replace("$", "");
+
+        if (operand.startsWith("$")) {
+            String addr = operand.substring(1).replace("$", "").trim();
             Integer opcode = INSTRUCTION_MAP.get(mnemonic + "$");
-            if (opcode != null) {
-                return new AssemblyLine(opcode, address);
-            }
+            if (opcode != null)
+                return new AssemblyLine(opcode, addr);
         }
+<<<<<<< HEAD
         if (mnemonic.equals("TFR") || mnemonic.equals("EXG")) {
             Integer trOpcode = INSTRUCTION_MAP.get(mnemonic);
             if (trOpcode != null) {
@@ -373,6 +345,18 @@ public class InstructionAssembler {
 
     private static class AssemblyLine {
         private byte[] bytes;
+=======
+
+        Integer opcode = INSTRUCTION_MAP.get(mnemonic);
+        if (opcode != null)
+            return new AssemblyLine(opcode, operand.replace("$", "").trim());
+
+        return null;
+    }
+
+    private static class AssemblyLine {
+        private final byte[] bytes;
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
 
         AssemblyLine(int opcode, String operand) {
             List<Byte> list = new ArrayList<>();
@@ -382,35 +366,37 @@ public class InstructionAssembler {
             } else {
                 list.add((byte) (opcode & 0xFF));
             }
-            if (!operand.isEmpty()) {
-                operand = operand.replace("$", "").trim();
-                if (operand.length() == 1) {
-                    list.add((byte) Integer.parseInt(operand, 16));
-                } else if (operand.length() == 2) {
-                    list.add((byte) Integer.parseInt(operand, 16));
-                } else if (operand.length() == 4) {
-                    list.add((byte) Integer.parseInt(operand.substring(0, 2), 16));
-                    list.add((byte) Integer.parseInt(operand.substring(2, 4), 16));
-                } else {
-                    int value = Integer.parseInt(operand);
-                    if (value < 256) {
-                        list.add((byte) value);
+            if (operand != null && !operand.isEmpty()) {
+                String op = operand.replace("$", "").trim();
+                try {
+                    if (op.length() == 1 || op.length() == 2) {
+                        list.add((byte) Integer.parseInt(op, 16));
+                    } else if (op.length() == 4) {
+                        list.add((byte) Integer.parseInt(op.substring(0, 2), 16));
+                        list.add((byte) Integer.parseInt(op.substring(2, 4), 16));
                     } else {
-                        list.add((byte) ((value >> 8) & 0xFF));
-                        list.add((byte) (value & 0xFF));
+                        int v = Integer.parseInt(op);
+                        if (v < 256)
+                            list.add((byte) v);
+                        else {
+                            list.add((byte) ((v >> 8) & 0xFF));
+                            list.add((byte) (v & 0xFF));
+                        }
                     }
+                } catch (NumberFormatException ex) {
+                    // ignore malformed operand here
                 }
             }
             bytes = new byte[list.size()];
-            for (int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < list.size(); i++)
                 bytes[i] = list.get(i);
-            }
         }
 
         byte[] getBytes() {
             return bytes;
         }
     }
+<<<<<<< HEAD
 
     public static String getInstructionList() {
         StringBuilder sb = new StringBuilder();
@@ -465,4 +451,6 @@ public class InstructionAssembler {
                         "Registre inconnu: " + reg + ". Registres valides: D, X, Y, U, S, PC, A, B, CC, DP");
         }
     }
+=======
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
 }

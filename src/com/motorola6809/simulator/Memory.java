@@ -18,6 +18,7 @@ public class Memory {
                 String.format("Adresse 0x%04X hors limites (0x0000-0xFFFF)", address));
         }
     }
+    
     public byte readByte(int address) {
         checkAddress(address);
         if (romMap[address]) {

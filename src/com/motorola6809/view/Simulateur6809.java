@@ -60,6 +60,7 @@ public class Simulateur6809 {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
+<<<<<<< HEAD
         JButton reset = new JButton("RESET");
         JButton Enregistrer = new JButton("Enregistrer");
         JButton pasApas = new JButton("Pas à pas");
@@ -121,6 +122,23 @@ public class Simulateur6809 {
             ex.printStackTrace();
         }
 
+=======
+        // Create buttons with icons
+        JButton reset = createButtonWithIcon("RESET", "images/reset.icon.jpg", 16, 16);
+        JButton Enregistrer = createButtonWithIcon("Enregistrer", "images/save.icon.png", 16, 16);
+        JButton pasApas = createButtonWithIcon("Pas à pas", "images/pas.icon.png", 16, 16);
+        JButton run = createButtonWithIcon("▶ Exécuter", "images/run.icon.png", 16, 16);
+        JButton Pause = new JButton("⏸ Pause");
+
+        // Set uniform size for all buttons
+        Dimension buttonSize = new Dimension(130, 45);
+        reset.setPreferredSize(buttonSize);
+        Enregistrer.setPreferredSize(buttonSize);
+        pasApas.setPreferredSize(buttonSize);
+        run.setPreferredSize(buttonSize);
+        Pause.setPreferredSize(buttonSize);
+
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
         reset.addActionListener(e -> resetCPU());
         Enregistrer.addActionListener(e -> saveProgram());
         pasApas.addActionListener(e -> stepCPU());
@@ -219,22 +237,33 @@ public class Simulateur6809 {
         addRegisterRow(registresPanel, "SP:", spField);
 
         JPanel flagsPanel = new JPanel();
-        flagsPanel.setPreferredSize(new Dimension(280, 150));
+        flagsPanel.setPreferredSize(new Dimension(280, 200));
         flagsPanel.setBackground(Color.BLACK);
+<<<<<<< HEAD
         flagsPanel.setLayout(new GridLayout(2, 3, 15, 15));
+=======
+        flagsPanel.setLayout(new GridLayout(2, 3, 18, 18));
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
         flagsPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 2),
                 "FLAGS", 0, 0, new Font("Verdana", Font.BOLD, 16), Color.WHITE));
 
+<<<<<<< HEAD
         String[] flags = { "P", "AC", "N", "Z", "V", "C" };
+=======
+        // Keep six visible flags. Map displayed labels to underlying CPU flags:
+        // Display: AC (maps to H), P (maps to I), S (maps to N), Z, V, C
+        String[] flags = { "AC", "P", "S", "Z", "V", "C" };
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
         flagCheckBoxes = new JCheckBox[flags.length];
         for (int i = 0; i < flags.length; i++) {
             flagCheckBoxes[i] = new JCheckBox(flags[i]);
             flagCheckBoxes[i].setBackground(Color.BLACK);
             flagCheckBoxes[i].setForeground(Color.WHITE);
-            flagCheckBoxes[i].setFont(new Font("Arial", Font.BOLD, 14));
-            flagCheckBoxes[i].setPreferredSize(new Dimension(50, 40));
+            flagCheckBoxes[i].setFont(new Font("Arial", Font.BOLD, 18));
+            flagCheckBoxes[i].setPreferredSize(new Dimension(90, 50));
             flagCheckBoxes[i].setFocusPainted(false);
+            flagCheckBoxes[i].setHorizontalAlignment(SwingConstants.CENTER);
             flagsPanel.add(flagCheckBoxes[i]);
         }
 
@@ -296,7 +325,8 @@ public class Simulateur6809 {
         editeur = new JTextArea();
         editeur.setBackground(Color.BLACK);
         editeur.setForeground(Color.WHITE);
-        editeur.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        // Police agrandie pour l'éditeur
+        editeur.setFont(new Font("Monospaced", Font.PLAIN, 18));
         editeur.setEditable(true);
         editeur.setText("");
         editeur.setCaretColor(Color.WHITE);
@@ -643,6 +673,7 @@ public class Simulateur6809 {
             clearROM();
             log("ROM vidée (0xFC00-0xFFFD)");
 
+<<<<<<< HEAD
             log("\n=== TRAITEMENT DES DIRECTIVES DB ===");
             List<InstructionAssembler.DBInfo> dbList = InstructionAssembler.extractDBDirectives(bytecode);
             if (!dbList.isEmpty()) {
@@ -677,6 +708,9 @@ public class Simulateur6809 {
             }
             byte[] finalCode = new byte[writeIndex];
             System.arraycopy(codeWithoutDB, 0, finalCode, 0, writeIndex);
+=======
+            byte[] finalCode = bytecode;
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
 
             log("\n=== CHARGEMENT DES OPCODES EN ROM ===");
             log("Chargement de " + finalCode.length + " bytes à l'adresse 0xFC00...");
@@ -687,7 +721,7 @@ public class Simulateur6809 {
             for (int i = 0; i < finalCode.length; i++) {
                 int address = 0xFC00 + i;
                 byte loaded = memory.readByte(address);
-                byte expected = bytecode[i];
+                byte expected = finalCode[i];
                 if (loaded != expected) {
                     logError(String.format("  ✗ ROM[0x%04X] = 0x%02X (attendu: 0x%02X)",
                             address, loaded & 0xFF, expected & 0xFF));
@@ -728,9 +762,12 @@ public class Simulateur6809 {
 
             log("\n=== RÉSUMÉ ===");
             log("✓ Programme assemblé: " + finalCode.length + " bytes");
+<<<<<<< HEAD
             if (!dbList.isEmpty()) {
                 log("✓ " + dbList.size() + " directive(s) DB traitées");
             }
+=======
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
             log("✓ Opcodes chargés en ROM à partir de 0xFC00");
             log("✓ PC = 0x" + String.format("%04X", currentPC) + " (pointe vers la ROM)");
             log("✓ Premier opcode à 0xFC00: 0x" + String.format("%02X", firstOpcode & 0xFF));
@@ -741,11 +778,14 @@ public class Simulateur6809 {
 
             updateAllViews();
 
+<<<<<<< HEAD
             if (!dbList.isEmpty()) {
                 log("\n=== MISE À JOUR DE L'AFFICHAGE RAM ===");
                 log("Les valeurs DB ont été écrites et l'affichage RAM a été mis à jour.");
             }
 
+=======
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
             addHistory("PROGRAMME CHARGÉ - " + bytecode.length + " bytes à 0xFC00");
         } catch (IllegalArgumentException e) {
             logError("ERREUR D'ASSEMBLAGE: " + e.getMessage());
@@ -787,14 +827,21 @@ public class Simulateur6809 {
         dpField.setText(String.format("%02X", cpu.getDP()));
         spField.setText(String.format("%04X", cpu.getS()));
 
-        // Mise à jour des flags
+        // Mise à jour des flags (6 visibles): mapping affiché -> CPU.Flag
+        // indices: 0=AC(H), 1=P(I), 2=S(N), 3=Z, 4=V, 5=C
         if (flagCheckBoxes != null) {
             flagCheckBoxes[5].setSelected(cpu.isFlagSet(CPU.Flag.C)); // C
             flagCheckBoxes[4].setSelected(cpu.isFlagSet(CPU.Flag.V)); // V
             flagCheckBoxes[3].setSelected(cpu.isFlagSet(CPU.Flag.Z)); // Z
+<<<<<<< HEAD
             flagCheckBoxes[2].setSelected(cpu.isFlagSet(CPU.Flag.N)); // N
             flagCheckBoxes[1].setSelected(cpu.isFlagSet(CPU.Flag.I)); // AC (affichage pour I)
             flagCheckBoxes[0].setSelected(cpu.isFlagSet(CPU.Flag.H)); // S (affichage pour H)
+=======
+            flagCheckBoxes[2].setSelected(cpu.isFlagSet(CPU.Flag.N)); // N -> S
+            flagCheckBoxes[1].setSelected(cpu.isFlagSet(CPU.Flag.I)); // I -> P
+            flagCheckBoxes[0].setSelected(cpu.isFlagSet(CPU.Flag.H)); // H -> AC
+>>>>>>> 0000038d6c42683524e2f6bb090959cdcc9a6a5c
         }
     }
 
@@ -1083,5 +1130,22 @@ public class Simulateur6809 {
         mb.add(menuFenetres);
 
         frame.setJMenuBar(mb);
+    }
+
+    private static JButton createButtonWithIcon(String text, String iconPath, int width, int height) {
+        JButton button = new JButton(text);
+        try {
+            String basePath = System.getProperty("user.dir");
+            String fullPath = basePath + java.io.File.separator + iconPath;
+            ImageIcon icon = new ImageIcon(fullPath);
+            Image scaledImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            button.setIcon(new ImageIcon(scaledImage));
+            button.setHorizontalTextPosition(SwingConstants.LEFT);
+            button.setVerticalTextPosition(SwingConstants.CENTER);
+            button.setIconTextGap(8);
+        } catch (Exception e) {
+            System.err.println("Could not load icon: " + iconPath);
+        }
+        return button;
     }
 }

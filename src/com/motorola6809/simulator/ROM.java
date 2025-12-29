@@ -17,6 +17,8 @@ public class ROM {
     }
     public void writeByte(int address, byte value) {
         checkAddress(address);
+        memory[address] = value;
+        initialized[address] = true;
     }
     public int readWord(int address) {
         checkAddress(address);

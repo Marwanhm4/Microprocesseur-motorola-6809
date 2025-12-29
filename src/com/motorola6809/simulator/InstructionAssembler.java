@@ -1,8 +1,10 @@
 package com.motorola6809.simulator;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+
 public class InstructionAssembler {
     private static final Map<String, Integer> INSTRUCTION_MAP = new HashMap<>();
     static {
@@ -104,6 +106,8 @@ public class InstructionAssembler {
         INSTRUCTION_MAP.put("PSHB", 0x37);
         INSTRUCTION_MAP.put("PULA", 0x32);
         INSTRUCTION_MAP.put("PULB", 0x33);
+        INSTRUCTION_MAP.put("PSHS", 0x34);
+        INSTRUCTION_MAP.put("PULS", 0x35);
         INSTRUCTION_MAP.put("NOP", 0x12);
         INSTRUCTION_MAP.put("SYNC", 0x13);
         INSTRUCTION_MAP.put("SWI", 0x3F);
@@ -131,22 +135,110 @@ public class InstructionAssembler {
         INSTRUCTION_MAP.put("LBSR", 0x17);
         INSTRUCTION_MAP.put("JMP", 0x7E);
         INSTRUCTION_MAP.put("JSR", 0xBD);
+        INSTRUCTION_MAP.put("TFR", 0x1F);
+        INSTRUCTION_MAP.put("EXG", 0x1E);
+        INSTRUCTION_MAP.put("DB", -1);
     }
+
     public static byte[] assemble(String[] lines) throws IllegalArgumentException {
         List<Byte> bytecode = new ArrayList<>();
-        for (String line : lines) {
-            line = line.trim().toUpperCase();
-            if (line.isEmpty() || line.startsWith(";")) {
+        for (String originalLine : lines) {
+            String line = originalLine.trim();
+            if (line.isEmpty()) {
                 continue;
             }
+
+            String instructionPart = "";
+            String commentPart = "";
+
             if (line.contains(";")) {
-                line = line.substring(0, line.indexOf(";")).trim();
+                int semicolonIndex = line.indexOf(";");
+                commentPart = line.substring(semicolonIndex + 1).trim();
+                instructionPart = line.substring(0, semicolonIndex).trim().toUpperCase();
+            } else {
+                instructionPart = line.toUpperCase();
             }
-            if (line.equals("END")) {
-                bytecode.add((byte)0x00);
+
+            if (instructionPart.isEmpty() && !commentPart.isEmpty()) {
+                continue;
+            }
+
+            if (instructionPart.isEmpty()) {
+                continue;
+            }
+
+            if (instructionPart.equals("END")) {
+                bytecode.add((byte) 0x00);
                 break;
             }
-            AssemblyLine instruction = parseLine(line);
+
+            if (instructionPart.equals("DB")) {
+                int address = -1;
+                int value = 0;
+
+                if (commentPart.matches("^[0-9A-F]{4}.*")) {
+                    String addrStr = commentPart.substring(0, 4);
+                    String valuePart = commentPart.substring(4).trim();
+                    try {
+                        address = Integer.parseInt(addrStr, 16);
+                        if (valuePart.startsWith("#$")) {
+                            value = Integer.parseInt(valuePart.substring(2).trim(), 16);
+                        } else if (valuePart.startsWith("#")) {
+                            value = Integer.parseInt(valuePart.substring(1).trim(), 16);
+                        } else if (valuePart.startsWith("$")) {
+                            value = Integer.parseInt(valuePart.substring(1).trim(), 16);
+                        } else {
+                            throw new IllegalArgumentException("DB nécessite une valeur (ex: ;0002 DB #$10)");
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException(
+                                "Format d'adresse ou valeur invalide pour DB: " + originalLine);
+                    }
+                } else {
+                    String[] parts = instructionPart.split("\\s+");
+                    if (parts.length >= 2) {
+                        try {
+                            String addrStr = parts[1].replace("$", "").trim();
+                            address = Integer.parseInt(addrStr, 16);
+                            if (parts.length >= 3) {
+                                String valueStr = parts[2].replace("#$", "").replace("#", "").replace("$", "").trim();
+                                value = Integer.parseInt(valueStr, 16);
+                            } else if (!commentPart.isEmpty()) {
+                                String valuePart = commentPart.trim();
+                                if (valuePart.startsWith("#$")) {
+                                    value = Integer.parseInt(valuePart.substring(2).trim(), 16);
+                                } else if (valuePart.startsWith("#")) {
+                                    value = Integer.parseInt(valuePart.substring(1).trim(), 16);
+                                } else if (valuePart.startsWith("$")) {
+                                    value = Integer.parseInt(valuePart.substring(1).trim(), 16);
+                                } else {
+                                    value = Integer.parseInt(valuePart, 16);
+                                }
+                            } else {
+                                throw new IllegalArgumentException("DB nécessite une valeur (ex: DB $0002 #$10)");
+                            }
+                        } catch (NumberFormatException e) {
+                            throw new IllegalArgumentException("Format invalide pour DB: " + originalLine);
+                        }
+                    } else {
+                        throw new IllegalArgumentException(
+                                "DB nécessite une adresse et une valeur (ex: ;0002 DB #$10)");
+                    }
+                }
+
+                if (address == -1) {
+                    throw new IllegalArgumentException("DB nécessite une adresse (ex: ;0002 DB #$10)");
+                }
+
+                bytecode.add((byte) 0xFF);
+                bytecode.add((byte) 0xFF);
+                bytecode.add((byte) ((address >> 8) & 0xFF));
+                bytecode.add((byte) (address & 0xFF));
+                bytecode.add((byte) (value & 0xFF));
+                continue;
+            }
+
+            AssemblyLine instruction = parseLine(instructionPart);
             if (instruction != null) {
                 for (byte b : instruction.getBytes()) {
                     bytecode.add(b);
@@ -159,6 +251,32 @@ public class InstructionAssembler {
         }
         return result;
     }
+
+    public static class DBInfo {
+        public int address;
+        public byte value;
+
+        public DBInfo(int address, byte value) {
+            this.address = address;
+            this.value = value;
+        }
+    }
+
+    public static List<DBInfo> extractDBDirectives(byte[] bytecode) {
+        List<DBInfo> dbList = new ArrayList<>();
+        for (int i = 0; i < bytecode.length - 4; i++) {
+            if ((bytecode[i] & 0xFF) == 0xFF && (bytecode[i + 1] & 0xFF) == 0xFF) {
+                if (i + 4 < bytecode.length) {
+                    int address = ((bytecode[i + 2] & 0xFF) << 8) | (bytecode[i + 3] & 0xFF);
+                    byte value = bytecode[i + 4];
+                    dbList.add(new DBInfo(address, value));
+                    i += 4;
+                }
+            }
+        }
+        return dbList;
+    }
+
     private static AssemblyLine parseLine(String line) throws IllegalArgumentException {
         line = line.toUpperCase().trim();
         if (line.isEmpty()) {
@@ -188,8 +306,40 @@ public class InstructionAssembler {
                 return new AssemblyLine(opcode, address);
             }
         }
+        if (mnemonic.equals("TFR") || mnemonic.equals("EXG")) {
+            Integer trOpcode = INSTRUCTION_MAP.get(mnemonic);
+            if (trOpcode != null) {
+                if (operand.isEmpty()) {
+                    throw new IllegalArgumentException(mnemonic + " nécessite deux registres (ex: TFR A,B)");
+                }
+                String[] regs = operand.split(",");
+                if (regs.length != 2) {
+                    throw new IllegalArgumentException(
+                            mnemonic + " nécessite deux registres séparés par une virgule (ex: TFR A,B)");
+                }
+                int srcReg = getRegisterCode(regs[0].trim().toUpperCase());
+                int dstReg = getRegisterCode(regs[1].trim().toUpperCase());
+                int postByte = (srcReg << 4) | dstReg;
+                return new AssemblyLine(trOpcode, String.format("%02X", postByte & 0xFF));
+            }
+        }
         Integer opcode = INSTRUCTION_MAP.get(mnemonic);
         if (opcode != null) {
+            if (mnemonic.equals("PSHS") || mnemonic.equals("PULS")) {
+                if (operand.isEmpty()) {
+                    throw new IllegalArgumentException(mnemonic + " nécessite un opérande (masque de registres)");
+                }
+                String mask = operand.replace("$", "").trim();
+                int maskValue;
+                if (mask.length() == 1) {
+                    maskValue = Integer.parseInt(mask, 16);
+                } else if (mask.length() == 2) {
+                    maskValue = Integer.parseInt(mask, 16);
+                } else {
+                    maskValue = Integer.parseInt(mask, 16);
+                }
+                return new AssemblyLine(opcode, String.format("%02X", maskValue & 0xFF));
+            }
             return new AssemblyLine(opcode, "");
         }
         if (mnemonic.startsWith("B") || mnemonic.startsWith("LB")) {
@@ -217,11 +367,13 @@ public class InstructionAssembler {
                 throw new IllegalArgumentException(mnemonic + " nécessite une adresse");
             }
         }
-        throw new IllegalArgumentException("Instruction inconnue: " + mnemonic + 
-            ". Vérifiez la syntaxe et le mode d'adressage.");
+        throw new IllegalArgumentException("Instruction inconnue: " + mnemonic +
+                ". Vérifiez la syntaxe et le mode d'adressage.");
     }
+
     private static class AssemblyLine {
         private byte[] bytes;
+
         AssemblyLine(int opcode, String operand) {
             List<Byte> list = new ArrayList<>();
             if (opcode > 0xFF) {
@@ -254,14 +406,16 @@ public class InstructionAssembler {
                 bytes[i] = list.get(i);
             }
         }
+
         byte[] getBytes() {
             return bytes;
         }
     }
+
     public static String getInstructionList() {
         StringBuilder sb = new StringBuilder();
         sb.append("Instructions supportées:\n");
-        sb.append("=== Mode Immédiat (#) ===\n");
+        sb.append(" Mode Immédiat (#)  \n");
         sb.append("LDA #$20     ; Charger A avec valeur immédiate\n");
         sb.append("LDB #$40     ; Charger B avec valeur immédiate\n");
         sb.append("ADDA #$10    ; Ajouter à A\n");
@@ -282,5 +436,33 @@ public class InstructionAssembler {
         sb.append("\n=== Commentaires ===\n");
         sb.append("; Ceci est un commentaire\n");
         return sb.toString();
+    }
+
+    private static int getRegisterCode(String reg) {
+        switch (reg) {
+            case "D":
+                return 0;
+            case "X":
+                return 1;
+            case "Y":
+                return 2;
+            case "U":
+                return 3;
+            case "S":
+                return 4;
+            case "PC":
+                return 5;
+            case "A":
+                return 8;
+            case "B":
+                return 9;
+            case "CC":
+                return 10;
+            case "DP":
+                return 11;
+            default:
+                throw new IllegalArgumentException(
+                        "Registre inconnu: " + reg + ". Registres valides: D, X, Y, U, S, PC, A, B, CC, DP");
+        }
     }
 }

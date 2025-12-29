@@ -3,6 +3,7 @@ package com.motorola6809.view;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 import com.motorola6809.simulator.CPU;
 import com.motorola6809.simulator.Memory;
 import com.motorola6809.simulator.InstructionAssembler;
@@ -12,40 +13,34 @@ public class Simulateur6809 {
     static JMenuBar mb;
     static JMenuItem i1, i2, i3, i11;
 
-    
     static JTable ramTable;
     static JTable romTable;
     static JFrame mainFrame;
 
-    
     static Memory memory;
     static CPU cpu;
-    
-   
-    static JTextField pcField, sField, uField, xField, yField;
+
+    static JTextField pcField, uField, xField, yField;
     static JTextField aField, bField, dpField, spField;
     static JCheckBox[] flagCheckBoxes;
     static JTextArea instructionArea;
     static JTextArea consoleArea;
     static JTextArea historiqueArea;
     static JTextArea editeur;
-    
-    
+
     static Timer runTimer;
     static volatile boolean isRunning = false;
 
     public static void main(String[] args) {
-        
+
         memory = new Memory();
         cpu = new CPU(memory);
         cpu.initialize();
-        
-       
-        memory.setRAM(0x0000, 0x03FF);  
-        memory.setROM(0xFC00, 0xFFFD);  
-        memory.setRAM(0xFFFE, 0xFFFF); 
 
-       
+        memory.setRAM(0x0000, 0x03FF);
+        memory.setROM(0xFC00, 0xFFFD);
+        memory.setRAM(0xFFFE, 0xFFFF);
+
         mainFrame = new JFrame("Simulateur 6809");
         mainFrame.setSize(1200, 800);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -53,7 +48,6 @@ public class Simulateur6809 {
 
         createMenuBar(mainFrame);
 
-        
         JPanel hautpanel = new JPanel(new BorderLayout());
         JPanel titre = new JPanel();
         titre.setBackground(Color.LIGHT_GRAY);
@@ -63,17 +57,70 @@ public class Simulateur6809 {
         label.setForeground(Color.black);
         titre.add(label);
 
-        
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        
+
         JButton reset = new JButton("RESET");
         JButton Enregistrer = new JButton("Enregistrer");
         JButton pasApas = new JButton("Pas à pas");
-        JButton run = new JButton("▶ Exécuter");
-        JButton Pause = new JButton("⏸ Pause");
+        JButton run = new JButton("Exécuter");
+        JButton Pause = new JButton(" Pause ⏸");
 
-        
+        // Agrandir les boutons
+        Dimension buttonSize = new Dimension(120, 40);
+        reset.setPreferredSize(buttonSize);
+        Enregistrer.setPreferredSize(buttonSize);
+        pasApas.setPreferredSize(buttonSize);
+        run.setPreferredSize(buttonSize);
+        Pause.setPreferredSize(buttonSize);
+
+        // Augmenter la taille de la police
+        Font buttonFont = new Font("Arial", Font.BOLD, 12);
+        reset.setFont(buttonFont);
+        Enregistrer.setFont(buttonFont);
+        pasApas.setFont(buttonFont);
+        run.setFont(buttonFont);
+        Pause.setFont(buttonFont);
+
+        // Ajouter les icones aux boutons
+        String basePath = System.getProperty("user.dir") + "/MOTOROLA_6809/images/";
+
+        try {
+            ImageIcon resetIcon = new ImageIcon(basePath + "reset.icon.jpg");
+            Image rimg = resetIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            reset.setIcon(new ImageIcon(rimg));
+            reset.setHorizontalTextPosition(SwingConstants.LEFT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        try {
+            ImageIcon saveIcon = new ImageIcon(basePath + "save.icon.png");
+            Image simg = saveIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            Enregistrer.setIcon(new ImageIcon(simg));
+            Enregistrer.setHorizontalTextPosition(SwingConstants.LEFT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        try {
+            ImageIcon pasIcon = new ImageIcon(basePath + "pas.icon.png");
+            Image pimg = pasIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            pasApas.setIcon(new ImageIcon(pimg));
+            pasApas.setHorizontalTextPosition(SwingConstants.LEFT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        try {
+            ImageIcon runIcon = new ImageIcon(basePath + "run.icon.png");
+            Image rrun = runIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            run.setIcon(new ImageIcon(rrun));
+            run.setHorizontalTextPosition(SwingConstants.LEFT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         reset.addActionListener(e -> resetCPU());
         Enregistrer.addActionListener(e -> saveProgram());
         pasApas.addActionListener(e -> stepCPU());
@@ -90,17 +137,13 @@ public class Simulateur6809 {
         hautpanel.add(toolBar, BorderLayout.SOUTH);
         mainFrame.add(hautpanel, BorderLayout.NORTH);
 
-        
         JPanel centrepanel = new JPanel(new GridLayout(1, 3, 10, 0));
         centrepanel.setBackground(Color.BLACK);
 
-        
         JPanel gauchePanel = createRegistersPanel();
 
-       
         JPanel editorSpace = createEditorPanel();
 
-        
         JPanel droitePanel = new JPanel(new GridLayout(2, 1, 0, 10));
         droitePanel.setBackground(Color.BLACK);
 
@@ -116,61 +159,48 @@ public class Simulateur6809 {
 
         mainFrame.add(centrepanel, BorderLayout.CENTER);
 
-        
         JPanel basPanel = createConsolePanel();
         mainFrame.add(basPanel, BorderLayout.SOUTH);
 
-        
         clearROM();
-        
-        
-        memory.writeByte(0xFFFE, (byte)0xFC);
-        memory.writeByte(0xFFFF, (byte)0x00);
-        
-        
+
+        memory.writeByte(0xFFFE, (byte) 0xFC);
+        memory.writeByte(0xFFFF, (byte) 0x00);
+
         if (consoleArea != null) {
             consoleArea.setText("");
         }
         if (historiqueArea != null) {
             historiqueArea.setText("");
         }
-        
-        
+
         cpu.reset();
-        
-        
+
         if (cpu.getPC() != 0xFC00) {
             cpu.setPC(0xFC00);
         }
-        
-        
-        updateAllViews();
-        
-        mainFrame.setVisible(true);
-        
-        
-    }
 
-    
+        updateAllViews();
+
+        mainFrame.setVisible(true);
+
+    }
 
     private static JPanel createRegistersPanel() {
         JPanel gauchePanel = new JPanel(new BorderLayout());
         gauchePanel.setBackground(Color.BLACK);
         gauchePanel.setPreferredSize(new Dimension(280, 600));
 
-        
         JPanel registresPanel = new JPanel();
         registresPanel.setPreferredSize(new Dimension(280, 250));
         registresPanel.setBackground(Color.BLACK);
         registresPanel.setForeground(Color.WHITE);
-        registresPanel.setLayout(new GridLayout(9, 2, 5, 5));
+        registresPanel.setLayout(new GridLayout(8, 2, 5, 5));
         registresPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY),
                 "REGISTRES", 0, 0, new Font("Verdana", Font.BOLD, 12), Color.WHITE));
 
-       
         pcField = createRegisterField("FC00");
-        sField = createRegisterField("0000");
         uField = createRegisterField("0000");
         xField = createRegisterField("0000");
         yField = createRegisterField("0000");
@@ -179,9 +209,7 @@ public class Simulateur6809 {
         dpField = createRegisterField("00");
         spField = createRegisterField("0000");
 
-        
         addRegisterRow(registresPanel, "PC:", pcField);
-        addRegisterRow(registresPanel, "S:", sField);
         addRegisterRow(registresPanel, "U:", uField);
         addRegisterRow(registresPanel, "X:", xField);
         addRegisterRow(registresPanel, "Y:", yField);
@@ -190,16 +218,15 @@ public class Simulateur6809 {
         addRegisterRow(registresPanel, "DP:", dpField);
         addRegisterRow(registresPanel, "SP:", spField);
 
-        
         JPanel flagsPanel = new JPanel();
         flagsPanel.setPreferredSize(new Dimension(280, 150));
         flagsPanel.setBackground(Color.BLACK);
-        flagsPanel.setLayout(new GridLayout(2, 4, 15, 15));
+        flagsPanel.setLayout(new GridLayout(2, 3, 15, 15));
         flagsPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 2),
                 "FLAGS", 0, 0, new Font("Verdana", Font.BOLD, 16), Color.WHITE));
 
-        String[] flags = {"E", "F", "H", "I", "N", "Z", "V", "C"};
+        String[] flags = { "P", "AC", "N", "Z", "V", "C" };
         flagCheckBoxes = new JCheckBox[flags.length];
         for (int i = 0; i < flags.length; i++) {
             flagCheckBoxes[i] = new JCheckBox(flags[i]);
@@ -211,7 +238,6 @@ public class Simulateur6809 {
             flagsPanel.add(flagCheckBoxes[i]);
         }
 
-        
         JPanel instructionPanel = new JPanel(new BorderLayout());
         instructionPanel.setPreferredSize(new Dimension(280, 80));
         instructionPanel.setBackground(Color.BLACK);
@@ -242,7 +268,7 @@ public class Simulateur6809 {
         field.setEditable(false);
         return field;
     }
-    
+
     private static JTextField createRegisterLabelField(String labelText) {
         JTextField field = new JTextField(labelText);
         field.setBackground(Color.WHITE);
@@ -272,13 +298,9 @@ public class Simulateur6809 {
         editeur.setForeground(Color.WHITE);
         editeur.setFont(new Font("Monospaced", Font.PLAIN, 14));
         editeur.setEditable(true);
-<<<<<<< HEAD
         editeur.setText("");
         editeur.setCaretColor(Color.WHITE);
-=======
-        editeur.setText(""); 
->>>>>>> 7b4c114c40a236826b4503cf724abc39c561d6bc
-        
+
         JScrollPane editorScroll = new JScrollPane(editeur);
         editorScroll.getViewport().setBackground(Color.BLACK);
         editorSpace.add(editorScroll, BorderLayout.CENTER);
@@ -291,7 +313,6 @@ public class Simulateur6809 {
         basPanel.setPreferredSize(new Dimension(1200, 150));
         basPanel.setBackground(Color.BLACK);
 
-       
         JPanel consolePanel = new JPanel(new BorderLayout());
         consolePanel.setBackground(Color.BLACK);
         consolePanel.setBorder(BorderFactory.createTitledBorder(
@@ -306,7 +327,6 @@ public class Simulateur6809 {
         JScrollPane consoleScroll = new JScrollPane(consoleArea);
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
 
-        
         JPanel historiquePanel = new JPanel(new BorderLayout());
         historiquePanel.setBackground(Color.BLACK);
         historiquePanel.setBorder(BorderFactory.createTitledBorder(
@@ -363,7 +383,7 @@ public class Simulateur6809 {
         topPanel.add(navPanel, BorderLayout.SOUTH);
         panel.add(topPanel, BorderLayout.NORTH);
 
-        String[] columnNames = {"Adresse", "Valeur"};
+        String[] columnNames = { "Adresse", "Valeur" };
         int rows = endAddr - startAddr + 1;
         Object[][] data = new Object[rows][2];
 
@@ -390,7 +410,6 @@ public class Simulateur6809 {
         table.setSelectionBackground(Color.DARK_GRAY);
         table.setSelectionForeground(Color.WHITE);
 
-        
         model.addTableModelListener(e -> {
             if (e.getColumn() == 1) {
                 int row = e.getFirstRow();
@@ -411,42 +430,33 @@ public class Simulateur6809 {
         scrollPane.setBackground(Color.BLACK);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        
         goButton.addActionListener(e -> gotoMemoryAddress(goAddrField.getText(), table));
         goAddrField.addActionListener(e -> gotoMemoryAddress(goAddrField.getText(), table));
 
         return panel;
     }
 
-    
-
     private static void resetCPU() {
-        pauseCPU(); 
-        
-        
+        pauseCPU();
+
         if (consoleArea != null) {
             consoleArea.setText("");
         }
         if (historiqueArea != null) {
             historiqueArea.setText("");
         }
-        
-        
+
         clearROM();
-        
-        
-        memory.writeByte(0xFFFE, (byte)0xFC);
-        memory.writeByte(0xFFFF, (byte)0x00);
-        
-        
+
+        memory.writeByte(0xFFFE, (byte) 0xFC);
+        memory.writeByte(0xFFFF, (byte) 0x00);
+
         cpu.reset();
-        
-        
+
         if (cpu.getPC() != 0xFC00) {
             cpu.setPC(0xFC00);
         }
-        
-       
+
         cpu.setA(0);
         cpu.setB(0);
         cpu.setX(0);
@@ -454,8 +464,7 @@ public class Simulateur6809 {
         cpu.setU(0);
         cpu.setS(0);
         cpu.setDP(0);
-        
-       
+
         updateAllViews();
     }
 
@@ -465,59 +474,53 @@ public class Simulateur6809 {
         }
         try {
             int pcBefore = cpu.getPC();
-            
-            
+
             if (pcBefore < 0xFC00 || pcBefore > 0xFFFD) {
-                logError("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcBefore) + " est sorti de la ROM (0xFC00-0xFFFD)");
+                logError("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcBefore)
+                        + " est sorti de la ROM (0xFC00-0xFFFD)");
                 log("Le programme est terminé.");
                 return;
             }
-            
-            
+
             byte opcodeAtPC = memory.readByte(pcBefore);
-            
-            
+
             if (opcodeAtPC == 0x00) {
                 log("FIN DU PROGRAMME: Instruction END détectée à l'adresse 0x" + String.format("%04X", pcBefore));
                 log("Le programme est terminé.");
                 return;
             }
-            
-            
+
             String instruction = disassembleInstruction(pcBefore);
             log(String.format("\n=== EXÉCUTION ==="));
             log(String.format("PC = 0x%04X (ROM)", pcBefore));
             log(String.format("Opcode = 0x%02X", opcodeAtPC & 0xFF));
             log(String.format("Instruction = %s", instruction));
-            
-            
+
             cpu.step();
-            
+
             int pcAfter = cpu.getPC();
-            
 
             if (pcAfter < 0xFC00 || pcAfter > 0xFFFD) {
-                log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcAfter) + " est sorti de la ROM après exécution");
+                log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcAfter)
+                        + " est sorti de la ROM après exécution");
                 log("Le programme est terminé.");
                 updateAllViews();
                 return;
             }
-            
-            
+
             updateAllViews();
-            
-            
+
             int pcIncrement = pcAfter - pcBefore;
             if (pcIncrement < 0) {
                 pcIncrement += 0x10000;
             }
-            
+
             log(String.format("Après exécution:"));
             log(String.format("  PC: 0x%04X → 0x%04X (+%d bytes)", pcBefore, pcAfter, pcIncrement));
-            log(String.format("  Registres: A=0x%02X, B=0x%02X, X=0x%04X, Y=0x%04X, U=0x%04X, S=0x%04X", 
-                cpu.getA(), cpu.getB(), cpu.getX(), cpu.getY(), cpu.getU(), cpu.getS()));
+            log(String.format("  Registres: A=0x%02X, B=0x%02X, X=0x%04X, Y=0x%04X, U=0x%04X, S=0x%04X",
+                    cpu.getA(), cpu.getB(), cpu.getX(), cpu.getY(), cpu.getU(), cpu.getS()));
             log(String.format("  DP=0x%02X", cpu.getDP()));
-            
+
             addHistory(String.format("EXÉCUTION: %s (PC 0x%04X → 0x%04X)", instruction, pcBefore, pcAfter));
         } catch (IllegalStateException e) {
             logError("Erreur d'exécution: " + e.getMessage());
@@ -535,43 +538,38 @@ public class Simulateur6809 {
         }
         isRunning = true;
         log("Exécution du programme...");
-        
+
         runTimer = new Timer(100, e -> {
             try {
                 int pcBefore = cpu.getPC();
-                
-                
+
                 if (pcBefore < 0xFC00 || pcBefore > 0xFFFD) {
                     log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcBefore) + " est sorti de la ROM");
                     log("Le programme est terminé.");
                     pauseCPU();
                     return;
                 }
-                
-                
+
                 byte opcodeAtPC = memory.readByte(pcBefore);
-                
-                
+
                 if (opcodeAtPC == 0x00) {
                     log("FIN DU PROGRAMME: Instruction END détectée à l'adresse 0x" + String.format("%04X", pcBefore));
                     log("Le programme est terminé.");
                     pauseCPU();
                     return;
                 }
-                
-                
+
                 cpu.step();
-                
+
                 int pcAfter = cpu.getPC();
-                
-                
+
                 if (pcAfter < 0xFC00 || pcAfter > 0xFFFD) {
                     log("FIN DU PROGRAMME: PC=0x" + String.format("%04X", pcAfter) + " est sorti de la ROM");
                     log("Le programme est terminé.");
                     pauseCPU();
                     return;
                 }
-                
+
                 updateAllViews();
                 addHistory("STEP - PC: " + String.format("%04X", cpu.getPC()));
             } catch (IllegalStateException ex) {
@@ -597,16 +595,15 @@ public class Simulateur6809 {
 
     private static void saveProgram() {
         try {
-           
+
             String code = editeur.getText();
             if (code.trim().isEmpty()) {
                 logError("L'éditeur est vide. Veuillez écrire un programme.");
                 return;
             }
-            
-            
+
             consoleArea.setText("");
-            
+
             log("=== CHARGEMENT DU PROGRAMME DEPUIS L'ÉDITEUR ===");
             log("Code source depuis l'éditeur:");
             String[] codeLines = code.split("\n");
@@ -618,18 +615,17 @@ public class Simulateur6809 {
                 }
                 lineNum++;
             }
-            
+
             // ÉTAPE 2: Assembler le code en opcodes
             log("\n=== ASSEMBLAGE EN OPCODES ===");
             String[] lines = code.split("\n");
             byte[] bytecode = InstructionAssembler.assemble(lines);
-            
+
             if (bytecode.length == 0) {
                 logError("Aucun code généré. Vérifiez votre syntaxe.");
                 return;
             }
-            
-            
+
             log("Opcodes générés (" + bytecode.length + " bytes):");
             StringBuilder hexDump = new StringBuilder();
             for (int i = 0; i < bytecode.length; i++) {
@@ -642,53 +638,82 @@ public class Simulateur6809 {
             if (hexDump.length() > 0) {
                 log("  " + hexDump.toString());
             }
-            
-            
+
             log("\n=== VIDAGE DE LA ROM ===");
             clearROM();
             log("ROM vidée (0xFC00-0xFFFD)");
-            
-            
+
+            log("\n=== TRAITEMENT DES DIRECTIVES DB ===");
+            List<InstructionAssembler.DBInfo> dbList = InstructionAssembler.extractDBDirectives(bytecode);
+            if (!dbList.isEmpty()) {
+                log("Directives DB trouvées: " + dbList.size());
+                for (InstructionAssembler.DBInfo db : dbList) {
+                    memory.writeByte(db.address, db.value);
+                    log(String.format("  DB: Adresse 0x%04X = 0x%02X", db.address, db.value & 0xFF));
+
+                    byte verify = memory.readByte(db.address);
+                    if (verify == db.value) {
+                        log(String.format("  ✓ Vérifié: RAM/ROM[0x%04X] = 0x%02X", db.address, verify & 0xFF));
+                    } else {
+                        logError(String.format("  ✗ ERREUR: RAM/ROM[0x%04X] = 0x%02X (attendu: 0x%02X)",
+                                db.address, verify & 0xFF, db.value & 0xFF));
+                    }
+                }
+                updateMemoryDisplay();
+            } else {
+                log("Aucune directive DB trouvée dans le code.");
+            }
+
+            byte[] codeWithoutDB = new byte[bytecode.length];
+            int writeIndex = 0;
+            for (int i = 0; i < bytecode.length; i++) {
+                if (i < bytecode.length - 4 &&
+                        (bytecode[i] & 0xFF) == 0xFF &&
+                        (bytecode[i + 1] & 0xFF) == 0xFF) {
+                    i += 4;
+                    continue;
+                }
+                codeWithoutDB[writeIndex++] = bytecode[i];
+            }
+            byte[] finalCode = new byte[writeIndex];
+            System.arraycopy(codeWithoutDB, 0, finalCode, 0, writeIndex);
+
             log("\n=== CHARGEMENT DES OPCODES EN ROM ===");
-            log("Chargement de " + bytecode.length + " bytes à l'adresse 0xFC00...");
-            memory.loadROM(0xFC00, bytecode);
-            
-            
+            log("Chargement de " + finalCode.length + " bytes à l'adresse 0xFC00...");
+            memory.loadROM(0xFC00, finalCode);
+
             log("Vérification du chargement:");
             boolean allOk = true;
-            for (int i = 0; i < bytecode.length; i++) {
+            for (int i = 0; i < finalCode.length; i++) {
                 int address = 0xFC00 + i;
                 byte loaded = memory.readByte(address);
                 byte expected = bytecode[i];
                 if (loaded != expected) {
-                    logError(String.format("  ✗ ROM[0x%04X] = 0x%02X (attendu: 0x%02X)", 
-                        address, loaded & 0xFF, expected & 0xFF));
+                    logError(String.format("  ✗ ROM[0x%04X] = 0x%02X (attendu: 0x%02X)",
+                            address, loaded & 0xFF, expected & 0xFF));
                     allOk = false;
                 } else {
                     log(String.format("  ✓ ROM[0x%04X] = 0x%02X", address, loaded & 0xFF));
                 }
             }
-            
+
             if (!allOk) {
                 logError("ERREUR: Certains opcodes n'ont pas été correctement chargés en ROM!");
                 return;
             }
-            
+
             log("✓ Tous les opcodes sont correctement chargés en ROM");
-            
-            
+
             log("\n=== CONFIGURATION DU VECTEUR DE RESET ===");
-            memory.writeByte(0xFFFE, (byte)0xFC);
-            memory.writeByte(0xFFFF, (byte)0x00);
+            memory.writeByte(0xFFFE, (byte) 0xFC);
+            memory.writeByte(0xFFFF, (byte) 0x00);
             log("Vecteur de reset configuré: 0xFFFE-0xFFFF = 0xFC00");
-            
-            
+
             log("\n=== INITIALISATION DU CPU ===");
             cpu.reset();
             cpu.setPC(0xFC00);
             log("PC initialisé à 0xFC00 (première instruction en ROM)");
-            
-            
+
             cpu.setA(0);
             cpu.setB(0);
             cpu.setX(0);
@@ -697,13 +722,15 @@ public class Simulateur6809 {
             cpu.setS(0);
             cpu.setDP(0);
             log("Tous les registres réinitialisés à zéro");
-            
-            
+
             byte firstOpcode = memory.readByte(0xFC00);
             int currentPC = cpu.getPC();
-            
+
             log("\n=== RÉSUMÉ ===");
-            log("✓ Programme assemblé: " + bytecode.length + " bytes");
+            log("✓ Programme assemblé: " + finalCode.length + " bytes");
+            if (!dbList.isEmpty()) {
+                log("✓ " + dbList.size() + " directive(s) DB traitées");
+            }
             log("✓ Opcodes chargés en ROM à partir de 0xFC00");
             log("✓ PC = 0x" + String.format("%04X", currentPC) + " (pointe vers la ROM)");
             log("✓ Premier opcode à 0xFC00: 0x" + String.format("%02X", firstOpcode & 0xFF));
@@ -711,10 +738,14 @@ public class Simulateur6809 {
             log("\n→ Cliquez sur 'Pas à pas' pour exécuter instruction par instruction");
             log("→ Cliquez sur 'Exécuter' pour exécution continue");
             log("=== FIN CHARGEMENT ===");
-            
-            
+
             updateAllViews();
-            
+
+            if (!dbList.isEmpty()) {
+                log("\n=== MISE À JOUR DE L'AFFICHAGE RAM ===");
+                log("Les valeurs DB ont été écrites et l'affichage RAM a été mis à jour.");
+            }
+
             addHistory("PROGRAMME CHARGÉ - " + bytecode.length + " bytes à 0xFC00");
         } catch (IllegalArgumentException e) {
             logError("ERREUR D'ASSEMBLAGE: " + e.getMessage());
@@ -724,21 +755,18 @@ public class Simulateur6809 {
             logError("ERREUR LORS DU CHARGEMENT: " + e.getMessage());
         }
     }
-    
+
     private static void clearROM() {
         try {
-           
+
             int romSize = 0xFFFD - 0xFC00 + 1;
             byte[] zeros = new byte[romSize];
-            
-            
+
             memory.loadROM(0xFC00, zeros);
         } catch (Exception e) {
             logError("Erreur lors du vidage de la ROM: " + e.getMessage());
         }
     }
-
-    
 
     private static void updateAllViews() {
         updateRegistersDisplay();
@@ -747,10 +775,10 @@ public class Simulateur6809 {
     }
 
     private static void updateRegistersDisplay() {
-        if (pcField == null) return;
-        
+        if (pcField == null)
+            return;
+
         pcField.setText(String.format("%04X", cpu.getPC()));
-        sField.setText(String.format("%04X", cpu.getS()));
         uField.setText(String.format("%04X", cpu.getU()));
         xField.setText(String.format("%04X", cpu.getX()));
         yField.setText(String.format("%04X", cpu.getY()));
@@ -761,25 +789,24 @@ public class Simulateur6809 {
 
         // Mise à jour des flags
         if (flagCheckBoxes != null) {
-            flagCheckBoxes[7].setSelected(cpu.isFlagSet(CPU.Flag.C)); // C
-            flagCheckBoxes[6].setSelected(cpu.isFlagSet(CPU.Flag.V)); // V
-            flagCheckBoxes[5].setSelected(cpu.isFlagSet(CPU.Flag.Z)); // Z
-            flagCheckBoxes[4].setSelected(cpu.isFlagSet(CPU.Flag.N)); // N
-            flagCheckBoxes[3].setSelected(cpu.isFlagSet(CPU.Flag.I)); // I
-            flagCheckBoxes[2].setSelected(cpu.isFlagSet(CPU.Flag.H)); // H
-            flagCheckBoxes[1].setSelected(cpu.isFlagSet(CPU.Flag.F)); // F
-            flagCheckBoxes[0].setSelected(cpu.isFlagSet(CPU.Flag.E)); // E
+            flagCheckBoxes[5].setSelected(cpu.isFlagSet(CPU.Flag.C)); // C
+            flagCheckBoxes[4].setSelected(cpu.isFlagSet(CPU.Flag.V)); // V
+            flagCheckBoxes[3].setSelected(cpu.isFlagSet(CPU.Flag.Z)); // Z
+            flagCheckBoxes[2].setSelected(cpu.isFlagSet(CPU.Flag.N)); // N
+            flagCheckBoxes[1].setSelected(cpu.isFlagSet(CPU.Flag.I)); // AC (affichage pour I)
+            flagCheckBoxes[0].setSelected(cpu.isFlagSet(CPU.Flag.H)); // S (affichage pour H)
         }
     }
-    
+
     private static void updateInstructionDisplay() {
-        if (instructionArea == null) return;
+        if (instructionArea == null)
+            return;
         String instruction = disassembleInstruction(cpu.getPC());
         instructionArea.setText(instruction);
     }
 
     private static void updateMemoryDisplay() {
-       
+
         if (ramTable != null) {
             DefaultTableModel model = (DefaultTableModel) ramTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -790,7 +817,6 @@ public class Simulateur6809 {
             }
         }
 
-        
         if (romTable != null) {
             DefaultTableModel model = (DefaultTableModel) romTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -815,100 +841,130 @@ public class Simulateur6809 {
         }
     }
 
-    
-    
     private static String disassembleInstruction(int pc) {
         try {
             int opcode = memory.readByte(pc) & 0xFF;
-            
-            
+
             if (opcode == 0x00) {
                 return "END";
             }
-            
+
             String mnemonic = getMnemonic(opcode);
-            
-            if (opcode == 0x86 || opcode == 0xC6 || opcode == 0x8B || opcode == 0xCB || 
-                opcode == 0x80 || opcode == 0xC0 || opcode == 0x84 || opcode == 0xC4 ||
-                opcode == 0x8A || opcode == 0xCA || opcode == 0x88 || opcode == 0xC8) {
+
+            if (opcode == 0x86 || opcode == 0xC6 || opcode == 0x8B || opcode == 0xCB ||
+                    opcode == 0x80 || opcode == 0xC0 || opcode == 0x84 || opcode == 0xC4 ||
+                    opcode == 0x8A || opcode == 0xCA || opcode == 0x88 || opcode == 0xC8) {
                 int imm = memory.readByte(pc + 1) & 0xFF;
                 return String.format("%s #$%02X", mnemonic, imm);
             }
-            
+
             if (opcode == 0x8E || opcode == 0xCE || opcode == 0x8F || opcode == 0xCF) {
                 int imm = (memory.readByte(pc + 1) & 0xFF) << 8 | (memory.readByte(pc + 2) & 0xFF);
                 return String.format("%s #$%04X", mnemonic, imm);
             }
-            
-            
+
             if (opcode == 0x96 || opcode == 0xD6 || opcode == 0x9E || opcode == 0xDE ||
-                opcode == 0x97 || opcode == 0xD7 || opcode == 0x9F || opcode == 0xDF) {
+                    opcode == 0x97 || opcode == 0xD7 || opcode == 0x9F || opcode == 0xDF) {
                 int addr = memory.readByte(pc + 1) & 0xFF;
                 return String.format("%s <$%02X", mnemonic, addr);
             }
-            
-           
+
             if (opcode == 0xB6 || opcode == 0xF6 || opcode == 0xBE || opcode == 0xFE ||
-                opcode == 0xB7 || opcode == 0xF7 || opcode == 0xBF || opcode == 0xFF) {
+                    opcode == 0xB7 || opcode == 0xF7 || opcode == 0xBF || opcode == 0xFF) {
                 int addr = (memory.readByte(pc + 1) & 0xFF) << 8 | (memory.readByte(pc + 2) & 0xFF);
                 return String.format("%s $%04X", mnemonic, addr);
             }
-            
-            
+
             if (opcode == 0x20 || opcode == 0x26 || opcode == 0x27 || opcode == 0x21 ||
-                opcode == 0x22 || opcode == 0x23 || opcode == 0x24 || opcode == 0x25) {
+                    opcode == 0x22 || opcode == 0x23 || opcode == 0x24 || opcode == 0x25) {
                 byte offsetByte = memory.readByte(pc + 1);
                 int offset = offsetByte;
                 int target = (pc + 2 + offset) & 0xFFFF;
                 return String.format("%s $%04X", mnemonic, target);
             }
-            
-            
+
             return mnemonic;
         } catch (Exception e) {
             return "???";
         }
     }
-    
+
     private static String getMnemonic(int opcode) {
         switch (opcode) {
-            case 0x86: return "LDA";
-            case 0xC6: return "LDB";
-            case 0x8E: return "LDX";
-            case 0xCE: return "LDU";
-            case 0x8B: return "ADDA";
-            case 0xCB: return "ADDB";
-            case 0x80: return "SUBA";
-            case 0xC0: return "SUBB";
-            case 0x84: return "ANDA";
-            case 0xC4: return "ANDB";
-            case 0x8A: return "ORA";
-            case 0xCA: return "ORB";
-            case 0x88: return "EORA";
-            case 0xC8: return "EORB";
-            case 0x96: return "LDA";
-            case 0xD6: return "LDB";
-            case 0x97: return "STA";
-            case 0xD7: return "STB";
-            case 0xB6: return "LDA";
-            case 0xF6: return "LDB";
-            case 0xB7: return "STA";
-            case 0xF7: return "STB";
-            case 0x20: return "BRA";
-            case 0x26: return "BNE";
-            case 0x27: return "BEQ";
-            case 0x4C: return "INCA";
-            case 0x5C: return "INCB";
-            case 0x4A: return "DECA";
-            case 0x5A: return "DECB";
-            case 0x3D: return "MUL";
-            case 0x1A: return "ORCC";
-            case 0x1C: return "ANDCC";
-            case 0x3B: return "RTI";
-            case 0x39: return "RTS";
-            case 0x3F: return "SWI";
-            case 0x10: return "NOP"; 
-            default: return String.format("OP%02X", opcode);
+            case 0x86:
+                return "LDA";
+            case 0xC6:
+                return "LDB";
+            case 0x8E:
+                return "LDX";
+            case 0xCE:
+                return "LDU";
+            case 0x8B:
+                return "ADDA";
+            case 0xCB:
+                return "ADDB";
+            case 0x80:
+                return "SUBA";
+            case 0xC0:
+                return "SUBB";
+            case 0x84:
+                return "ANDA";
+            case 0xC4:
+                return "ANDB";
+            case 0x8A:
+                return "ORA";
+            case 0xCA:
+                return "ORB";
+            case 0x88:
+                return "EORA";
+            case 0xC8:
+                return "EORB";
+            case 0x96:
+                return "LDA";
+            case 0xD6:
+                return "LDB";
+            case 0x97:
+                return "STA";
+            case 0xD7:
+                return "STB";
+            case 0xB6:
+                return "LDA";
+            case 0xF6:
+                return "LDB";
+            case 0xB7:
+                return "STA";
+            case 0xF7:
+                return "STB";
+            case 0x20:
+                return "BRA";
+            case 0x26:
+                return "BNE";
+            case 0x27:
+                return "BEQ";
+            case 0x4C:
+                return "INCA";
+            case 0x5C:
+                return "INCB";
+            case 0x4A:
+                return "DECA";
+            case 0x5A:
+                return "DECB";
+            case 0x3D:
+                return "MUL";
+            case 0x1A:
+                return "ORCC";
+            case 0x1C:
+                return "ANDCC";
+            case 0x3B:
+                return "RTI";
+            case 0x39:
+                return "RTS";
+            case 0x3F:
+                return "SWI";
+            case 0x10:
+                return "NOP";
+            default:
+                return String.format("OP%02X", opcode);
         }
     }
 
@@ -916,11 +972,11 @@ public class Simulateur6809 {
         try {
             address = address.trim().replace("0x", "").replace("0X", "");
             int addr = Integer.parseInt(address, 16);
-            
+
             for (int row = 0; row < table.getRowCount(); row++) {
                 String tableAddr = (String) table.getValueAt(row, 0);
                 int tableAddrInt = Integer.parseInt(tableAddr, 16);
-                
+
                 if (tableAddrInt == addr) {
                     table.scrollRectToVisible(table.getCellRect(row, 0, true));
                     table.setRowSelectionInterval(row, row);
@@ -928,7 +984,7 @@ public class Simulateur6809 {
                     return;
                 }
             }
-            
+
             JOptionPane.showMessageDialog(mainFrame,
                     "Adresse " + address + " non trouvable dans cette zone mémoire",
                     "Adresse introuvable", JOptionPane.WARNING_MESSAGE);
@@ -967,22 +1023,22 @@ public class Simulateur6809 {
         submenu = new JMenu("Nouveau");
         i1 = new JMenuItem("Éditeur");
         i11 = new JMenuItem("Quitter");
-        
+
         i1.addActionListener(e -> {
 
             JFrame editorFrame = new JFrame("Éditeur");
             editorFrame.setSize(600, 400);
             editorFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             editorFrame.setLayout(new BorderLayout());
-            
+
             JTextArea textArea = new JTextArea();
             textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
             JScrollPane scrollPane = new JScrollPane(textArea);
             editorFrame.add(scrollPane, BorderLayout.CENTER);
-            
+
             editorFrame.setVisible(true);
         });
-        
+
         i11.addActionListener(e -> System.exit(0));
 
         submenu.add(i1);
@@ -1029,5 +1085,3 @@ public class Simulateur6809 {
         frame.setJMenuBar(mb);
     }
 }
-
-

@@ -321,6 +321,7 @@ public class CPU {
                 int postByte = fetchByte();
                 switch (postByte) {
                     case 0xBE: opLDYimmediate(); break;
+                    case 0xCE: opLDSimmediate(); break;
                     case 0xAF: opLDYindexed(); break;
                     case 0xBF: opSTYindexed(); break;
                     case 0x3C: opINY(); break;
@@ -454,6 +455,11 @@ public class CPU {
     private void opLDUimmediate() {
         regU = fetchWord();
         updateNZFlags16(regU);
+        clearVFlag();
+    }
+    private void opLDSimmediate() {
+        regS = fetchWord();
+        updateNZFlags16(regS);
         clearVFlag();
     }
     private void opSTAdirect() {
@@ -1306,9 +1312,19 @@ public class CPU {
         int srcReg = (postByte >> 4) & 0x0F;
         int dstReg = postByte & 0x0F;
         int value = getRegisterValue(srcReg);
+        
+        if (srcReg >= 8 && dstReg < 8) {
+            value = value & 0xFF;
+        } else if (srcReg < 8 && dstReg >= 8) {
+            value = value & 0xFF;
+        }
+        
         setRegisterValue(dstReg, value);
-        if (dstReg <= 7) {
+        
+        if (dstReg >= 8) {
             updateNZFlags(value & 0xFF);
+        } else if (dstReg == 0) {
+            updateNZFlags16(value & 0xFFFF);
         } else {
             updateNZFlags16(value & 0xFFFF);
         }

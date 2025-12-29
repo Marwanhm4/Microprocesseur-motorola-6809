@@ -49,6 +49,9 @@ public class CPU {
             case 0xCE:
                 opLDUimmediate();
                 break;
+            case 0xCC:
+                opLDDimmediate();
+                break;
             case 0x8B:
                 opADDAimmediate();
                 break;
@@ -85,6 +88,7 @@ public class CPU {
             case 0xDE: opLDYdirect(); break;
             case 0x9C: opLDUdirect(); break;
             case 0x9D: opLDSdirect(); break;
+            case 0xDC: opLDDdirect(); break;
             case 0x97: opSTAdirect(); break;
             case 0xD7: opSTBdirect(); break;
             case 0x9F: opSTXdirect(); break;
@@ -104,6 +108,7 @@ public class CPU {
             case 0xF6: opLDBextended(); break;
             case 0xBE: opLDXextended(); break;
             case 0xFE: opLDYextended(); break;
+            case 0xFC: opLDDextended(); break;
             case 0xB7: opSTAextended(); break;
             case 0xF7: opSTBextended(); break;
             case 0xBF: opSTXextended(); break;
@@ -122,6 +127,7 @@ public class CPU {
             case 0xE6: opLDBindexed(); break;
             case 0xAE: opLDXindexed(); break;
             case 0xEE: opLDUindexed(); break;
+            case 0xEC: opLDDindexed(); break;
             case 0xA7: opSTAindexed(); break;
             case 0xE7: opSTBindexed(); break;
             case 0xAF: opSTXindexed(); break;
@@ -321,6 +327,7 @@ public class CPU {
                 int postByte = fetchByte();
                 switch (postByte) {
                     case 0xBE: opLDYimmediate(); break;
+                    case 0xCE: opLDSimmediate(); break;
                     case 0xAF: opLDYindexed(); break;
                     case 0xBF: opSTYindexed(); break;
                     case 0x3C: opINY(); break;
@@ -456,6 +463,17 @@ public class CPU {
         updateNZFlags16(regU);
         clearVFlag();
     }
+    private void opLDSimmediate() {
+        regS = fetchWord();
+        updateNZFlags16(regS);
+        clearVFlag();
+    }
+    private void opLDDimmediate() {
+        int value = fetchWord();
+        setD(value);
+        updateNZFlags16(value);
+        clearVFlag();
+    }
     private void opSTAdirect() {
         int offset = fetchByte() & 0xFF;
         int addr = (regDP << 8) | offset;
@@ -531,6 +549,14 @@ public class CPU {
         int addr = (regDP << 8) | offset;
         regS = memory.readWord(addr);
         updateNZFlags16(regS);
+        clearVFlag();
+    }
+    private void opLDDdirect() {
+        int offset = fetchByte() & 0xFF;
+        int addr = (regDP << 8) | offset;
+        int value = memory.readWord(addr);
+        setD(value);
+        updateNZFlags16(value);
         clearVFlag();
     }
     private void opADDAdirect() {
@@ -629,6 +655,13 @@ public class CPU {
         int addr = fetchWord();
         regY = memory.readWord(addr);
         updateNZFlags16(regY);
+        clearVFlag();
+    }
+    private void opLDDextended() {
+        int addr = fetchWord();
+        int value = memory.readWord(addr);
+        setD(value);
+        updateNZFlags16(value);
         clearVFlag();
     }
     private void opSTAextended() {
@@ -752,6 +785,14 @@ public class CPU {
         int addr = calculateIndexedAddress(postByte);
         regU = memory.readWord(addr);
         updateNZFlags16(regU);
+        clearVFlag();
+    }
+    private void opLDDindexed() {
+        int postByte = fetchByte();
+        int addr = calculateIndexedAddress(postByte);
+        int value = memory.readWord(addr);
+        setD(value);
+        updateNZFlags16(value);
         clearVFlag();
     }
     private void opSTAindexed() {
@@ -1306,9 +1347,19 @@ public class CPU {
         int srcReg = (postByte >> 4) & 0x0F;
         int dstReg = postByte & 0x0F;
         int value = getRegisterValue(srcReg);
+        
+        if (srcReg >= 8 && dstReg < 8) {
+            value = value & 0xFF;
+        } else if (srcReg < 8 && dstReg >= 8) {
+            value = value & 0xFF;
+        }
+        
         setRegisterValue(dstReg, value);
-        if (dstReg <= 7) {
+        
+        if (dstReg >= 8) {
             updateNZFlags(value & 0xFF);
+        } else if (dstReg == 0) {
+            updateNZFlags16(value & 0xFFFF);
         } else {
             updateNZFlags16(value & 0xFFFF);
         }

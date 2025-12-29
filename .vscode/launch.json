@@ -3,6 +3,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Simulateur6809",
+            "request": "launch",
+            "mainClass": "com.motorola6809.view.Simulateur6809",
+            "projectName": "simulator"
+        },
+        {
+            "type": "java",
+            "name": "Simulateur6809",
+            "request": "launch",
+            "mainClass": "com.motorola6809.view.Simulateur6809",
+            "projectName": "MOTOROLA_6809_7848b889"
+        },
+        {
+            "type": "java",
             "name": "▶ Lancer Simulateur6809",
             "request": "launch",
             "mainClass": "com.motorola6809.view.Simulateur6809",

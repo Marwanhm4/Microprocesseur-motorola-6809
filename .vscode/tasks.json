@@ -25,6 +25,32 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             }
+        },
+        {
+            "label": "run Simulateur6809",
+            "type": "shell",
+            "command": "java",
+            "args": [
+                "-cp",
+                "build",
+                "com.motorola6809.view.Simulateur6809"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "dependsOn": [
+                "compile"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }
